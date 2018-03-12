@@ -9,7 +9,7 @@
 	\version 1.5
 
 	The MIT License (MIT)
-	Copyright (c) 2015-2018 Frédéric Meslin
+	Copyright (c) 2015-2018 Frï¿½dï¿½ric Meslin
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -38,12 +38,17 @@
 	#include <stdint.h>
 	#include <stdlib.h>
 	#include <stddef.h>
+
+#ifdef AMIGA
+	#include "amiga/missing-math.h"
+#endif
 	typedef unsigned long long		LeHandle;												/** Native OS handle / pointer holder type */
 
 /** Handful macros */
 	#define cmax(a,b)				((a)>(b)?(a):(b))										/** Return the maximum of two values */
 	#define cmin(a,b)				((a)<(b)?(a):(b))										/** Return the minimum of two values */
-	#define cabs(a)					((a)<0.0f?(-(a)):(a))									/** Return the absolute value */
+	// defined cabs is defined in stdc lib for me?!
+	#define ccabs(a)				((a)<0.0f?(-(a)):(a))									/** Return the absolute value */
 	#define cbound(v, vmin, vmax)	((v)>(vmax)?(vmax):((v)<(vmin)?(vmin):(v)))				/** Limit a value between two bounds (included) */
 	#define csgn(a)					((a)<0.0f?-1.0f:1.0f)									/** Return the sign (+1.0 or -1.0) of a value */
 	#define cthr(a, t)				((a)<(-t)?-1.0f:((a)>(t)?1.0f:0.0f))					/** Compare a value to a threshold and return +1.0 (above), -1.0 (below) or 0.0f (inside) */

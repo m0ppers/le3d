@@ -9,7 +9,7 @@
 	\version 1.5
 
 	The MIT License (MIT)
-	Copyright (c) 2015-2018 Frédéric Meslin
+	Copyright (c) 2015-2018 Frï¿½dï¿½ric Meslin
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,7 @@
 #include "global.h"
 #include "config.h"
 
+#include <iostream>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -552,7 +553,7 @@ int LeRenderer::clip3D(LeTriangle tris[], const int srcIndices[], int dstIndices
 			nv[s++] = tri->vs[0];
 		}
 		if (pj1 * pj2 < 0.0f) {
-			float ratio = cabs(pj1 / (pj1 - pj2));
+			float ratio = ccabs(pj1 / (pj1 - pj2));
 			nx[s]	= tri->xs[0] + ratio * (tri->xs[1] - tri->xs[0]);
 			ny[s]	= tri->ys[0] + ratio * (tri->ys[1] - tri->ys[0]);
 			nz[s]	= tri->zs[0] + ratio * (tri->zs[1] - tri->zs[0]);
@@ -567,7 +568,7 @@ int LeRenderer::clip3D(LeTriangle tris[], const int srcIndices[], int dstIndices
 			nv[s++] = tri->vs[1];
 		}
 		if (pj2 * pj3 < 0.0f) {
-			float ratio = cabs(pj2 / (pj2 - pj3));
+			float ratio = ccabs(pj2 / (pj2 - pj3));
 			nx[s]	= tri->xs[1] + ratio * (tri->xs[2] - tri->xs[1]);
 			ny[s]	= tri->ys[1] + ratio * (tri->ys[2] - tri->ys[1]);
 			nz[s]	= tri->zs[1] + ratio * (tri->zs[2] - tri->zs[1]);
@@ -582,7 +583,7 @@ int LeRenderer::clip3D(LeTriangle tris[], const int srcIndices[], int dstIndices
 			nv[s++] = tri->vs[2];
 		}
 		if (pj3 * pj1 < 0.0f) {
-			float ratio = cabs(pj3 / (pj3 - pj1));
+			float ratio = ccabs(pj3 / (pj3 - pj1));
 			nx[s]	= tri->xs[2] + ratio * (tri->xs[0] - tri->xs[2]);
 			ny[s]	= tri->ys[2] + ratio * (tri->ys[0] - tri->ys[2]);
 			nz[s]	= tri->zs[2] + ratio * (tri->zs[0] - tri->zs[2]);
@@ -672,7 +673,7 @@ int LeRenderer::clip2D(LeTriangle tris[], const int srcIndices[], int dstIndices
 			nv[s++] = tri->vs[0];
 		}
 		if (pj1 * pj2 < 0.0f) {
-			float ratio = cabs(pj1 / (pj1 - pj2));
+			float ratio = ccabs(pj1 / (pj1 - pj2));
 			nx[s]	= tri->xs[0] + ratio * (tri->xs[1] - tri->xs[0]);
 			ny[s]	= tri->ys[0] + ratio * (tri->ys[1] - tri->ys[0]);
 			nz[s]	= tri->zs[0] + ratio * (tri->zs[1] - tri->zs[0]);
@@ -687,7 +688,7 @@ int LeRenderer::clip2D(LeTriangle tris[], const int srcIndices[], int dstIndices
 			nv[s++] = tri->vs[1];
 		}
 		if (pj2 * pj3 < 0.0f) {
-			float ratio = cabs(pj2 / (pj2 - pj3));
+			float ratio = ccabs(pj2 / (pj2 - pj3));
 			nx[s]	= tri->xs[1] + ratio * (tri->xs[2] - tri->xs[1]);
 			ny[s]	= tri->ys[1] + ratio * (tri->ys[2] - tri->ys[1]);
 			nz[s]	= tri->zs[1] + ratio * (tri->zs[2] - tri->zs[1]);
@@ -702,7 +703,7 @@ int LeRenderer::clip2D(LeTriangle tris[], const int srcIndices[], int dstIndices
 			nv[s++] = tri->vs[2];
 		}
 		if (pj3 * pj1 < 0.0f) {
-			float ratio = cabs(pj3 / (pj3 - pj1));
+			float ratio = ccabs(pj3 / (pj3 - pj1));
 			nx[s]	= tri->xs[2] + ratio * (tri->xs[0] - tri->xs[2]);
 			ny[s]	= tri->ys[2] + ratio * (tri->ys[0] - tri->ys[2]);
 			nz[s]	= tri->zs[2] + ratio * (tri->zs[0] - tri->zs[2]);

@@ -2,9 +2,13 @@ if (WIN32)
     add_executable(cube
         cube/cube_win.cpp
     )
-else()
+elseif(UNIX)
     add_executable(cube
         cube/cube_unix.cpp
+    )
+elseif(AMIGA)
+    add_executable(cube
+        cube/test_amiga.cpp
     )
 endif()
 

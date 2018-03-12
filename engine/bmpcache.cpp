@@ -9,7 +9,7 @@
 	\version 1.5
 
 	The MIT License (MIT)
-	Copyright (c) 2015-2018 Frédéric Meslin
+	Copyright (c) 2015-2018 Frï¿½dï¿½ric Meslin
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -123,7 +123,7 @@ void LeBmpCache::loadDirectory(const char * path)
 
 	while ((dd = readdir(dir))) {
 		if (dd->d_name[0] == '.') continue;
-		LeGlobal::getFileExtention(ext, LE_MAX_FILE_EXTENSION, dd->d_name);
+		LeGlobal::getFileExtention(ext, LE_MAX_FILE_EXTENSION, (const char*)dd->d_name);
 
 		if (strcmp(ext, "bmp") == 0) {
 		// Load a Windows bmp file
