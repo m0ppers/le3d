@@ -8,7 +8,7 @@ elseif(UNIX)
     )
 elseif(AMIGA)
     add_executable(cube
-        cube/test_amiga.cpp
+        cube/cube_amiga.cpp
     )
 endif()
 
