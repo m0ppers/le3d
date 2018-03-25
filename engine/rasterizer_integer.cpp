@@ -11,7 +11,7 @@
 	\version 1.5
 
 	The MIT License (MIT)
-	Copyright (c) 2015-2018 Frédéric Meslin
+	Copyright (c) 2015-2018 Frï¿½dï¿½ric Meslin
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -43,6 +43,8 @@
 
 #include <stdlib.h>
 #include <string.h>
+
+#define AMMX 1
 
 /*****************************************************************************/
 LeRasterizer::LeRasterizer(int width, int height) :
@@ -228,7 +230,7 @@ void LeRasterizer::topTriangleZC(int vt, int vm1, int vm2)
 	int y2 = ys[vm1];
 	x2 += 0xFFFF;
 
-	if (bmp->flags & LE_BMP_RGBA) {
+	if (bmp->flags & LE_BITMAP_RGBA) {
 		for (int y = y1; y < y2; y++) {
 			fillFlatTexAlphaZC(y, x1 >> 16, x2 >> 16, w1, w2, u1, u2, v1, v2);
 			x1 += ax1; x2 += ax2;
@@ -276,7 +278,7 @@ void LeRasterizer::bottomTriangleZC(int vm1, int vm2, int vb)
 	int y2 = ys[vb];
 	x2 += 0xFFFF;
 
-	if (bmp->flags & LE_BMP_RGBA) {
+	if (bmp->flags & LE_BITMAP_RGBA) {
 		for (int y = y1; y < y2; y++) {
 			fillFlatTexAlphaZC(y, x1 >> 16, x2 >> 16, w1, w2, u1, u2, v1, v2);
 			x1 += ax1; x2 += ax2;
@@ -366,7 +368,57 @@ inline void LeRasterizer::fillFlatTexAlphaZC(int y, int x1, int x2, int w1, int 
 }
 
 #else
+#if AMMX
+inline void LeRasterizer::fillFlatTexZC(int y, int x1, int x2, int w1, int w2, int u1, int u2, int v1, int v2)
+{
+	uint16_t d = x2 - x1;
+	if (d == 0) return;
 
+	{
+		// clobbers e5 that is used later (unknown to gcc so that should be fine)
+		register volatile uint8_t * c asm("a6") = (uint8_t *) &color;
+		__asm__ __volatile__(
+			"\t.byte 0xfe,0x16,0x0a,0x01\n" // LOAD (a6),e2
+			"\t.byte 0xfe,0x3f,0xad,0x00,0x48,0x49,0x4a,0x4b\n" // vperm #$48494a4b,d0,e2,e5
+			:
+			: "r"(c)
+			: "d0"
+		);
+	}
+
+	int au = (u2 - u1) / d;
+	int av = (v2 - v1) / d;
+	int aw = (w2 - w1) / d;
+
+	uint8_t * p asm("a3") = (uint8_t *) (x1 + y * frame.tx + (uint32_t *) frame.data);
+	for (int x = x1; x <= x2; x++) {
+		int32_t z = (1 << (24 + 4)) / (w1 >> (12 - 4));
+		uint32_t tu = ((u1 * z) >> 24) & texMaskU;
+		uint32_t tv = ((v1 * z) >> 24) & texMaskV;
+		register volatile uint8_t * pa asm("a3") = p;
+		register volatile uint8_t * t asm("a4") = (uint8_t *) &texPixels[tu + (tv << texSizeU)];
+		__asm__ __volatile__(
+			"\t.byte 0xfe,0x13,0x08,0x01\n" // LOAD (a3),e0
+            "\t.byte 0xfe,0x14,0x09,0x01\n" // LOAD (a4),e1
+			"\tmoveq #3,d0\n"
+            "\t.byte 0xfe,0x3f,0x8b,0x00,0x48,0x49,0x4a,0x4b\n" // vperm #$48494a4b,d0,e0,e3
+            "\t.byte 0xfe,0x3f,0x9c,0x00,0x48,0x49,0x4a,0x4b\n" // vperm #$48494a4b,d0,e1,e4
+			"\t.byte 0xfe,0x0c,0xdb,0x18\n" // pmul88 e4,e5,e3
+            "\t.byte 0xfe,0x3f,0xbe,0x00,0x9b,0xdf,0x00,0x00\n" // vperm #$9bdf0000,d0,e3,e6
+            "\t.byte 0xfe,0x13,0xe0,0x24\n" // storec e6,d0,(a3)
+			:
+			: "r"(pa),"r"(t)
+            : "d0"
+		);
+
+		p += 4;
+
+		u1 += au;
+		v1 += av;
+		w1 += aw;
+	}
+}
+#else
 inline void LeRasterizer::fillFlatTexZC(int y, int x1, int x2, int w1, int w2, int u1, int u2, int v1, int v2)
 {
 	uint8_t * c = (uint8_t *) &color;
@@ -395,6 +447,7 @@ inline void LeRasterizer::fillFlatTexZC(int y, int x1, int x2, int w1, int w2, i
 		w1 += aw;
 	}
 }
+#endif
 
 inline void LeRasterizer::fillFlatTexAlphaZC(int y, int x1, int x2, int w1, int w2, int u1, int u2, int v1, int v2)
 {
