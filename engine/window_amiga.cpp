@@ -92,10 +92,10 @@ LeWindow::~LeWindow()
 	\fn void LeWindow::update()
 	\brief Update window state and process events
 */
-void LeWindow::update()
+bool LeWindow::update()
 {
 	if (!handle) {
-		return;
+		return false;
 	}
 	auto window = (Window*) handle;
 
@@ -108,9 +108,10 @@ void LeWindow::update()
 		if (cls == IDCMP_CLOSEWINDOW) {
 			// no other possibility right now :(
 			CloseWindow(window);
-			Exit(0);
+			return false;
 		}
 	}
+	return true;
 }
 
 /*****************************************************************************/

@@ -55,9 +55,7 @@ int main()
 	timing.firstFrame();
 
 /** Program main loop */
-	while (true) {
-
-        window.update();
+	while (window.update()) {
 		// XEvent event;
 	//	XNextEvent(usedXDisplay, &event);
 

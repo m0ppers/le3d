@@ -2,12 +2,12 @@
 SET(CMAKE_SYSTEM_NAME Amiga)
 
 # specify the cross compiler
-SET(CMAKE_C_COMPILER   /home/mop/m68k-amigaos/bin/m68k-amigaos-gcc)
+SET(CMAKE_C_COMPILER   /home/mop/m68k-amigaos/bin/vc)
 SET(CMAKE_CXX_COMPILER /home/mop/m68k-amigaos/bin/m68k-amigaos-g++)
 
-# for whatever reason 68040 or hard-fpu and the like seem to produce insta-crashes using amiga gcc 6.2
-SET(CMAKE_C_FLAGS "-noixemul -m68030 -m68881" CACHE STRING "" FORCE)
-SET(CMAKE_CXX_FLAGS "-noixemul -m68030 -m68881" CACHE STRING "" FORCE)
+SET(CMAKE_C_FLAGS "-c99 -cpu=68080 -lmieee" CACHE STRING "" FORCE)
+SET(CMAKE_C_FLAGS_RELEASE "-O3" CACHE STRING "" FORCE)
+SET(CMAKE_CXX_FLAGS "-noixemul -m68060" CACHE STRING "" FORCE)
 
 SET(UNIX false)
 SET(AMIGA true)

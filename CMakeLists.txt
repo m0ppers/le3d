@@ -4,6 +4,7 @@ set(CMAKE_CXX_STANDARD 11)
 
 option(LE3D_BUILD_EXAMPLES "Build the example programs" ON)
 option(LE3D_FAST_MATH "Faster floating point but less precise" ON)
+option(LE3D_AMMX "Enable Vampire AMMX optimizations on Amiga" Off)
 
 SET(le3d_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -59,6 +60,18 @@ elseif (AMIGA)
         engine/window_amiga.cpp
         tools/timing_amiga.cpp
     )
+    if(LE3D_AMMX)
+        add_library(ammx_support STATIC
+            engine/ammx/ammx_support_funcs.c
+        )
+        target_link_libraries(ammx_support
+            PRIVATE
+            /home/mop/m68k-amigaos/m68k-amigaos/vbcc/lib/m060.lib
+        )
+        list(APPEND LINK_LIBRARIES
+            ammx_support
+        )
+    endif()
 endif()
 
 add_library(le3d
@@ -77,10 +90,13 @@ target_link_libraries(
     ${LINK_LIBRARIES}
 )
 
-target_compile_options(le3d PRIVATE -Wall -ffast-math -fno-exceptions -fno-rtti -fno-stack-protector -fno-math-errno -fno-ident -ffunction-sections)
+#target_compile_options(le3d PRIVATE -Wall -ffast-math -fno-exceptions -fno-rtti -fno-stack-protector -fno-math-errno -fno-ident -ffunction-sections)
 
 if (WIN32)
     #target_compile_options(le3d PRIVATE -D__MSVCRT_VERSION__=0x0700)
+endif()
+if(AMIGA AND LE3D_AMMX)
+    target_compile_options(le3d PRIVATE -DAMMX=1)
 endif()
 
 if (LE3D_BUILD_EXAMPLES)
