@@ -82,9 +82,10 @@ LeWindow::LeWindow(const char * name, int width, int height) :
 
 LeWindow::~LeWindow()
 {
-	if (handle) {
-		CloseWindow((Window*) handle);
+	if (!handle) {
+		return;
 	}
+	CloseWindow((Window*) handle);
 }
 
 /*****************************************************************************/
@@ -106,8 +107,6 @@ bool LeWindow::update()
 		GT_ReplyIMsg(msg);
 
 		if (cls == IDCMP_CLOSEWINDOW) {
-			// no other possibility right now :(
-			CloseWindow(window);
 			return false;
 		}
 	}
