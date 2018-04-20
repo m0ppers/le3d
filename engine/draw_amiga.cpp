@@ -41,6 +41,9 @@
 #include <cybergraphx/cybergraphics.h>
 #include <proto/cybergraphics.h>
 #include <proto/intuition.h>
+#include <proto/exec.h>
+
+struct Library *CyberGfxBase = NULL;
 
 /*****************************************************************************/
 LeDraw::LeDraw(LeDrawingContext context, int width, int height) :
@@ -48,6 +51,10 @@ LeDraw::LeDraw(LeDrawingContext context, int width, int height) :
 	frontContext(context),
 	bitmap(0)
 {
+	CyberGfxBase = OpenLibrary("cybergraphics.library", 41);
+	if (!CyberGfxBase) {
+	    printf("ERROR: can`t open cybergraphics.library V41.\n");	
+	}
 	// Visual * visual = DefaultVisual((Display *) context.display, 0);
 	// if (visual->c_class != TrueColor) {
 	// 	printf("Draw: can only draw on truecolor displays!\n");
@@ -59,6 +66,9 @@ LeDraw::LeDraw(LeDrawingContext context, int width, int height) :
 LeDraw::~LeDraw()
 {
 	// if (bitmap) XDestroyImage((XImage *) bitmap);
+	if (CyberGfxBase) {
+		CloseLibrary(CyberGfxBase);
+	}
 }
 
 /*****************************************************************************/
