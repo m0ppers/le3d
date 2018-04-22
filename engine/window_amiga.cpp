@@ -41,8 +41,9 @@
 #include <proto/dos.h>
 #include <proto/intuition.h>
 #include <proto/gadtools.h>
-#include <iostream>
-#include <string>
+
+#include <string.h>
+#include <stdio.h>
 
 /*****************************************************************************/
 // static Display * usedXDisplay = NULL;
@@ -188,7 +189,7 @@ void LeWindow::sendMouseEvent(int x, int y, int buttons)
 */
 void LeWindow::setFullScreen()
 {
-	std::cout << "Window: fullscreen mode is only supported for Windows OS\n!" << std::endl;
+	printf("Window: fullscreen mode is only supported for Windows OS\n!");
 }
 
 /**

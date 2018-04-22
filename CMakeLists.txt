@@ -1,13 +1,13 @@
-project(le3d CXX C)
+project(le3d CXX)
 cmake_minimum_required(VERSION 3.4)
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 option(LE3D_BUILD_EXAMPLES "Build the example programs" ON)
 option(LE3D_FAST_MATH "Faster floating point but less precise" ON)
 option(LE3D_AMMX "Enable Vampire AMMX optimizations on Amiga" Off)
 
 SET(le3d_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR})
-
 set(ENGINE_FILES
     engine/bitmap.cpp
     engine/bmpcache.cpp
@@ -26,7 +26,6 @@ set(ENGINE_FILES
     engine/verlist.cpp
     tools/physics.cpp
 )
-
 set(LINK_LIBRARIES)
 
 if (WIN32)
@@ -61,12 +60,9 @@ elseif (AMIGA)
         tools/timing_amiga.cpp
     )
     if(LE3D_AMMX)
+        enable_language(ASM-VASM)
         add_library(ammx_support STATIC
-            engine/ammx/ammx_support_funcs.c
-        )
-        target_link_libraries(ammx_support
-            PRIVATE
-            /home/mop/m68k-amigaos/m68k-amigaos/vbcc/lib/m060.lib
+            engine/ammx/ammx.s
         )
         list(APPEND LINK_LIBRARIES
             ammx_support

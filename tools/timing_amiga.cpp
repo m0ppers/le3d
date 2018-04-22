@@ -33,7 +33,7 @@
 /*****************************************************************************/
 #include "timing.h"
 
-#include <iostream>
+#include <stdio.h>
 
 #include <proto/exec.h>
 #include <proto/timer.h>

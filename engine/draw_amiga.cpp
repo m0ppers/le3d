@@ -36,7 +36,7 @@
 #include "global.h"
 #include "config.h"
 
-#include <iostream>
+#include <stdio.h>
 
 #include <cybergraphx/cybergraphics.h>
 #include <proto/cybergraphics.h>

@@ -38,6 +38,7 @@
 
 #include <string.h>
 #include <dirent.h>
+// #include <sstream>
 
 /*****************************************************************************/
 LeMeshCache meshCache;
@@ -102,6 +103,8 @@ void LeMeshCache::loadDirectory(const char * path)
 	char ext[LE_MAX_FILE_EXTENSION+1];
 	char filePath[LE_MAX_FILE_PATH+1];
 
+	memset(&filePath[0], 0, LE_MAX_FILE_EXTENSION+1);
+
 	DIR * dir = opendir(path);
 	struct dirent * dd;
 
@@ -110,9 +113,15 @@ void LeMeshCache::loadDirectory(const char * path)
 		LeGlobal::getFileExtention(ext, LE_MAX_FILE_EXTENSION, (const char*) dd->d_name);
 
 		if (strcmp(ext, "obj") == 0) {
-		// Load a Wavefront obj file
+			// Load a Wavefront obj file
 			snprintf(filePath, LE_MAX_FILE_PATH, "%s/%s", path, dd->d_name);
-			filePath[LE_MAX_FILE_PATH] = '\0';
+			// libnix bug
+			size_t count = strlen(path) + strlen((const char*) dd->d_name) + 1;
+			if (count > LE_MAX_FILE_PATH) {
+				filePath[LE_MAX_FILE_PATH] = '\0';
+			} else {
+				filePath[count] = '\0';
+			}
 			printf("meshCache: loading mesh: %s\n", filePath);
 			loadOBJ(filePath);
 		}

@@ -11,7 +11,7 @@
 #include "tools/timing.h"
 
 #include <stdlib.h>
-#include <iostream>
+#include <stdio.h>
 
 /*****************************************************************************/
 const int resoX = 640;

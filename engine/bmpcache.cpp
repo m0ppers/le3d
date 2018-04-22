@@ -38,6 +38,7 @@
 
 #include <string.h>
 #include <dirent.h>
+// #include <sstream>
 
 /*****************************************************************************/
 LeBmpCache bmpCache;
@@ -118,6 +119,8 @@ void LeBmpCache::loadDirectory(const char * path)
 	char ext[LE_MAX_FILE_EXTENSION+1];
 	char filePath[LE_MAX_FILE_PATH+1];
 
+	filePath[0] = '\0';
+
 	DIR * dir = opendir(path);
 	struct dirent * dd;
 
@@ -126,9 +129,14 @@ void LeBmpCache::loadDirectory(const char * path)
 		LeGlobal::getFileExtention(ext, LE_MAX_FILE_EXTENSION, (const char*)dd->d_name);
 
 		if (strcmp(ext, "bmp") == 0) {
-		// Load a Windows bmp file
 			snprintf(filePath, LE_MAX_FILE_PATH, "%s/%s", path, dd->d_name);
-			filePath[LE_MAX_FILE_PATH] = '\0';
+			// libnix bug
+			size_t count = strlen(path) + strlen((const char*) dd->d_name) + 1;
+			if (count > LE_MAX_FILE_PATH) {
+				filePath[LE_MAX_FILE_PATH] = '\0';
+			} else {
+				filePath[count] = '\0';
+			}
 			printf("bmpCache: loading bitmap: %s\n", filePath);
 			loadBMP(filePath);
 		}
