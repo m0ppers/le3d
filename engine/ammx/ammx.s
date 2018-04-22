@@ -1,3 +1,4 @@
+    xdef _fill_flat_texel
     xdef _pmul88_3byte
 
 _pmul88_3byte:
@@ -15,3 +16,80 @@ _pmul88_3byte:
     storec e5,d0,(a0)
     move.l a0,d0
 	rts
+
+
+; 
+; 4(a7) uint8_t* p
+; 8(a7) short d
+; 12(a7) int u1
+; 16(a7) int v1
+; 20(a7) int w1
+; 24(a7) int au
+; 28(a7) int av
+; 32(a7) int aw
+; 36(a7) uint32_t texMaskU
+; 40(a7) uint32_t texMaskV
+; 44(a7) uint32_t texSizeU
+; 48(a7) uint32_t* texPixels
+; 52(a7) uint8_t* color
+;
+; additional offset because of saved registers: 24
+;
+_fill_flat_texel:
+    movem.l d2-d7,-(a7)
+    move.l 28(a7),a1 ; p in a1
+    move.l 36(a7),d5 ; u1
+    move.l 40(a7),d6 ; v1
+    move.l 44(a7),d7 ; w1
+    moveq #0,d0
+    load 76(sp),e0
+    vperm #$48494a4b,d0,e0,e1
+    move.l 32(sp),d0
+    bra .loopend
+.loopstart
+    ; calculate z
+    move.l 1<<28,d1
+    move.l d7,d2
+    lsr.l #8,d2
+    divs.l d2,d1    ; z in d1
+    move.b #24,d4   ; needed for shift right
+    ; calculate tu
+    move.l 36(a7),d2
+    mulu.l d1,d2
+    lsr.l d4,d2
+    move.l 60(a7),d3
+    and.l d3,d2     ; tu in d2
+    ; calculate tv
+    move.l 40(a7),d3
+    mulu.l d1,d3
+    lsr.l d4,d3
+    move.l 64(a7),d4
+    and.l d4,d3     ; tv in d3
+    ; no idea why this is uint32_t :S
+    move.l 68(a7),d4    ; texSizeU
+    lsl.l d4,d3
+    add.l d2,d3         ; texpixel offset in d3
+    move.l 72(a7),d1
+    add.l d3,d1
+    move.l d1,a0        ; t
+    ; calculate p[]
+    moveq #3,d1
+    load (a0),e0
+    vperm #$48494a4b,d1,e0,e2
+    pmul88 e1,e2,e0
+    vperm #$9bdf0000,d1,e0,e1
+    storec e1,d1,(a1)
+    ; advance p
+    move.l a1,d1
+    add.l #4,d1
+    movea.l d1,a1
+    add.l 48(a7),d5
+    add.l 52(a7),d6
+    add.l 56(a7),d7
+    ;move.l d1,d0
+    ;bra .end
+.loopend:
+    dbra d0,.loopstart
+.end:
+    movem.l (a7)+,d2-d7
+    rts
