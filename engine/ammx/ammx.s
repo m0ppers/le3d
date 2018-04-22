@@ -48,9 +48,9 @@ _fill_flat_texel:
     bra .loopend
 .loopstart
     ; calculate z
-    move.l 1<<28,d1
+    move.l #$10000000,d1
     move.l d7,d2
-    lsr.l #8,d2
+    asr.l #8,d2
     divs.l d2,d1    ; z in d1
     move.b #24,d4   ; needed for shift right
     ; calculate tu
@@ -81,7 +81,7 @@ _fill_flat_texel:
     storec e1,d1,(a1)
     ; advance p
     move.l a1,d1
-    add.l #4,d1
+    addq.l #4,d1
     movea.l d1,a1
     add.l 48(a7),d5
     add.l 52(a7),d6
