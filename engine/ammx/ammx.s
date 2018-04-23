@@ -78,10 +78,7 @@ _fill_flat_texel:
     vperm #$9bdf0000,d1,e0,e3
     storec e3,d1,(a1)
     ; advance p
-    ; or.l #$ffff0000,(a1)
-    move.l a1,d1
-    addq.l #4,d1
-    movea.l d1,a1
+    addq.l #4,a1
     add.l 48(a7),d5
     add.l 52(a7),d6
     add.l 56(a7),d7
