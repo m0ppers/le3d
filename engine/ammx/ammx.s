@@ -41,10 +41,10 @@ _fill_flat_texel:
     move.l 36(a7),d5    ; u1 in d5
     move.l 40(a7),d6    ; v1 in d6
     move.l 44(a7),d7    ; w1 in d7
-    moveq #0,d0         ; d0 is our loopvar
+    moveq #0,d0
     load 76(sp),e0
     vperm #$48494a4b,d0,e0,e1   ; c in e1
-    move.l 32(sp),d0
+    move.l 32(sp),d0    ; d0 is our loopvar
     bra .loopend
 .loopstart
     ; calculate z
@@ -54,17 +54,15 @@ _fill_flat_texel:
     divs.l d2,d1    ; z in d1
     moveq #24,d4   ; needed for shift right
     ; calculate tu
-    move.l 36(a7),d2
+    move.l d5,d2
     muls.l d1,d2
     lsr.l d4,d2
-    move.l 60(a7),d3
-    and.l d3,d2     ; tu in d2
+    and.l 60(a7),d2     ; tu in d2
     ; calculate tv
-    move.l 40(a7),d3
+    move.l d6,d3
     muls.l d1,d3
     lsr.l d4,d3
-    move.l 64(a7),d4
-    and.l d4,d3     ; tv in d3
+    and.l 64(a7),d3     ; tv in d3
     ; no idea why this is uint32_t :S
     move.l 68(a7),d4    ; texSizeU
     lsl.l d4,d3
@@ -80,6 +78,7 @@ _fill_flat_texel:
     vperm #$9bdf0000,d1,e0,e3
     storec e3,d1,(a1)
     ; advance p
+    ; or.l #$ffff0000,(a1)
     move.l a1,d1
     addq.l #4,d1
     movea.l d1,a1
