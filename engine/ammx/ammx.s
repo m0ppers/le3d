@@ -67,6 +67,7 @@ _fill_flat_texel:
     move.l 68(a7),d4    ; texSizeU
     lsl.l d4,d3
     add.l d2,d3         ; texpixel offset in d3
+    lsl.l #2,d3         ; it is a 32bit field => multiply by 4
     move.l 72(a7),d1
     add.l d3,d1
     move.l d1,a0        ; t
