@@ -41,10 +41,10 @@ _fill_flat_texel:
     move.l 36(a7),d5    ; u1 in d5
     move.l 40(a7),d6    ; v1 in d6
     move.l 44(a7),d7    ; w1 in d7
-    moveq #0,d0
+    load #3,e4
     move.l 76(sp),a0
     load (a0),e0
-    vperm #$48494a4b,d0,e0,e1   ; c in e1
+    vperm #$48494a4b,e4,e0,e1   ; c in e1
     move.l 32(sp),d0    ; d0 is our loopvar
     bra .loopend
 .loopstart
@@ -73,12 +73,11 @@ _fill_flat_texel:
     add.l d3,d1
     move.l d1,a0        ; t
     ; calculate p[]
-    moveq #3,d1
     load (a0),e0
-    vperm #$48494a4b,d1,e0,e2
+    vperm #$48494a4b,e4,e0,e2
     pmul88 e1,e2,e0
-    vperm #$9bdf0000,d1,e0,e3
-    storec e3,d1,(a1)
+    vperm #$9bdf0000,e4,e0,e3
+    storec e3,e4,(a1)
     ; advance p
     addq.l #4,a1
     add.l 48(a7),d5
