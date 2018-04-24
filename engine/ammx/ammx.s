@@ -42,7 +42,8 @@ _fill_flat_texel:
     move.l 40(a7),d6    ; v1 in d6
     move.l 44(a7),d7    ; w1 in d7
     moveq #0,d0
-    load 76(sp),e0
+    move.l 76(sp),a0
+    load (a0),e0
     vperm #$48494a4b,d0,e0,e1   ; c in e1
     move.l 32(sp),d0    ; d0 is our loopvar
     bra .loopend
