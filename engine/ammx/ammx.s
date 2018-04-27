@@ -1,5 +1,4 @@
     xdef _fill_flat_texel
-    xdef _pmul88_3byte
     xdef _set_ammx_pixels
 
 ; 4(a7) void* p
@@ -52,29 +51,16 @@ _fill_flat_texel:
     move.l d7,d2
     asr.l #8,d2
     divs.l d2,d1    ; z in d1
-    ;fmove d1,fp0
-    ;fmove d2,fp1
-    ;fsdiv fp1,fp0
-    ;fmove fp0,d1
-    ;fmove #$1,fp0
-    ;fmove d2,fp1
-    ;fdiv fp1,fp0
-    ;fmove d5,fp1
-    ;fmul fp0,fp1
-    ;fmove fp0,d2
-    ;fmove d6,fp1
-    ;fmul fp0,fp1
-    ;fmove fp0,d3
     moveq #24,d4   ; needed for shift right
     ; calculate tu
     move.l d5,d2
+    move.l d6,d3
     muls.l d1,d2
     lsr.l d4,d2
-    and.l 60(a7),d2     ; tu in d2
-    ; calculate tv
-    move.l d6,d3
     muls.l d1,d3
     lsr.l d4,d3
+    and.l 60(a7),d2     ; tu in d2
+    ; calculate tv
     and.l 64(a7),d3     ; tv in d3
     ; no idea why this is uint32_t :S
     move.l 68(a7),d4    ; texSizeU
