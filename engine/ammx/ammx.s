@@ -51,7 +51,7 @@ _fill_flat_texel:
     move.l d7,d2
     asr.l #8,d2
     divs.l d2,d1    ; z in d1
-    moveq #24,d4   ; needed for shift right
+    move.b #24,d4   ; needed for shift right
     ; calculate tu
     move.l d5,d2
     move.l d6,d3
@@ -63,7 +63,7 @@ _fill_flat_texel:
     ; calculate tv
     and.l 64(a7),d3     ; tv in d3
     ; no idea why this is uint32_t :S
-    move.l 68(a7),d4    ; texSizeU
+    move.b 71(a7),d4    ; texSizeU
     lsl.l d4,d3
     add.l d2,d3         ; texpixel offset in d3
     lsl.l #2,d3         ; it is a 32bit field => multiply by 4
