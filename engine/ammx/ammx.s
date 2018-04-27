@@ -43,6 +43,7 @@ _fill_flat_texel:
     move.l 76(sp),a0
     load (a0),e0
     vperm #$48494a4b,e4,e0,e1   ; c in e1
+    bclr.l  #$09,d4     ; indicator if we should store our calculated result => start with 0
     move.l 32(sp),d0    ; d0 is our loopvar
     bra .loopend
 .loopstart
@@ -73,16 +74,23 @@ _fill_flat_texel:
     ; calculate p[]
     load (a0),e0
     vperm #$48494a4b,e4,e0,e2
-    pmul88 e1,e2,e0
-    vperm #$9bdf0000,e4,e0,e3
-    storec e3,e4,(a1)
-    ; advance p
-    addq.l #4,a1
+    bchg.l #$09,d4
+    bne.s .secondpass
+    pmul88 e1,e2,e5
+    bra .continue
+.secondpass
+    pmul88 e1,e2,e6
+    ; finally store our combined result
+    vperm #$13579bdf,e5,e6,e3
+    store e3,(a1)+
+.continue
+    ; NEXT!
     add.l 48(a7),d5
     add.l 52(a7),d6
     add.l 56(a7),d7
 .loopend:
     dbra d0,.loopstart
+    ; XXX no handling for odd d!
 .end:
     movem.l (a7)+,d2-d7
     rts
