@@ -9,7 +9,7 @@
 	\version 1.5
 
 	The MIT License (MIT)
-	Copyright (c) 2015-2018 Frédéric Meslin
+	Copyright (c) 2015-2018 Frï¿½dï¿½ric Meslin
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,9 @@
 #include "config.h"
 
 #include "simd.h"
+#ifdef AMMX
+#include "ammx/ammx.h"
+#endif
 
 /*****************************************************************************/
 LeBitmap::LeBitmap() :
@@ -94,6 +97,11 @@ void LeBitmap::clear(uint32_t color)
 	*p++ = color;
 	if (r == 2) return;
 	*p++ = color;
+}
+#elif AMMX
+void LeBitmap::clear(uint32_t color)
+{
+	set_ammx_pixels(data, tx * ty * 4, color);
 }
 #else
 void LeBitmap::clear(uint32_t color)

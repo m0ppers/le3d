@@ -1,21 +1,20 @@
     xdef _fill_flat_texel
     xdef _pmul88_3byte
+    xdef _set_ammx_pixels
 
-_pmul88_3byte:
-    move.l 8(a7),a0
-    LOAD (a0),e1
-    move.l 12(a7),a0
-    move.l a0,a1
-    LOAD (a0),e2
-    moveq #3,d0
-    vperm #$48494a4b,d0,e1,e3
-    vperm #$48494a4b,d0,e2,e4
-    pmul88 e4,e3,e0
-    vperm #$9bdf0000,d0,e0,e5
+; 4(a7) void* p
+; 8(a7) size_t bytes
+; 12(a7) uint32_t color
+_set_ammx_pixels:
     move.l 4(a7),a0
-    storec e5,d0,(a0)
-    move.l a0,d0
-	rts
+    move.l 8(a7),d0
+    move.l 12(a7),d1
+    vperm #$cdefcdef,d0,d1,e0
+.loop
+    storec e0,d0,(a0)+
+    subq.l #8,d0
+    bgt    .loop
+    rts
 
 
 ; 
@@ -53,6 +52,19 @@ _fill_flat_texel:
     move.l d7,d2
     asr.l #8,d2
     divs.l d2,d1    ; z in d1
+    ;fmove d1,fp0
+    ;fmove d2,fp1
+    ;fsdiv fp1,fp0
+    ;fmove fp0,d1
+    ;fmove #$1,fp0
+    ;fmove d2,fp1
+    ;fdiv fp1,fp0
+    ;fmove d5,fp1
+    ;fmul fp0,fp1
+    ;fmove fp0,d2
+    ;fmove d6,fp1
+    ;fmul fp0,fp1
+    ;fmove fp0,d3
     moveq #24,d4   ; needed for shift right
     ; calculate tu
     move.l d5,d2
