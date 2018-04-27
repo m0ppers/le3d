@@ -63,7 +63,7 @@ _fill_flat_texel:
     ; calculate tv
     and.l 64(a7),d3     ; tv in d3
     ; no idea why this is uint32_t :S
-    move.b 71(a7),d4    ; texSizeU
+    move.b 71(a7),d4    ; texSizeU (68 + 3 => fetch only the byte part of the uint32_t)
     lsl.l d4,d3
     add.l d2,d3         ; texpixel offset in d3
     lsl.l #2,d3         ; it is a 32bit field => multiply by 4
