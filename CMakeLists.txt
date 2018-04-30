@@ -4,7 +4,6 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 option(LE3D_BUILD_EXAMPLES "Build the example programs" ON)
-option(LE3D_FAST_MATH "Faster floating point but less precise" ON)
 option(LE3D_AMMX "Enable Vampire AMMX optimizations on Amiga" Off)
 
 SET(le3d_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR})
@@ -86,13 +85,24 @@ target_link_libraries(
     ${LINK_LIBRARIES}
 )
 
-#target_compile_options(le3d PRIVATE -Wall -ffast-math -fno-exceptions -fno-rtti -fno-stack-protector -fno-math-errno -fno-ident -ffunction-sections)
+if(AMIGA)
+    if (LE3D_AMMX)
+        target_compile_options(le3d PRIVATE -DAMMX=1)
+    endif()
+else()
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        set_target_properties(le3d PROPERTIES LINK_FLAGS "-m32")
+        target_compile_options(le3d PUBLIC -m32) 
+        target_compile_options(le3d PRIVATE -march=pentium4 -Wall -ffast-math -mfpmath=sse -fno-exceptions -fno-rtti -fno-stack-protector -fno-math-errno -fno-ident -ffunction-sections)
+        if (WIN32)
+            target_compile_options(le3d PRIVATE -D__MSVCRT_VERSION__=0x0700)
+        endif()
+    endif()
 
-if (WIN32)
-    #target_compile_options(le3d PRIVATE -D__MSVCRT_VERSION__=0x0700)
-endif()
-if(AMIGA AND LE3D_AMMX)
-    target_compile_options(le3d PRIVATE -DAMMX=1)
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        target_compile_options(le3d PRIVATE -D__MSVCRT_VERSION__=0x0700 -D_CRT_SECURE_NO_WARNINGS=1 -D_USE_MATH_DEFINES=1)
+        target_include_directories(le3d PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/engine/vs)
+    endif()
 endif()
 
 if (LE3D_BUILD_EXAMPLES)

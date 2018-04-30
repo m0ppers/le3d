@@ -54,10 +54,11 @@
 class LeRasterizer
 {
 public:
-	LeRasterizer(int width, int height);
+	LeRasterizer(int width = LE_RESOX_DEFAULT, int height = LE_RESOY_DEFAULT);
 	~LeRasterizer();
 
 	void rasterList(LeTriList * trilist);
+	const void * getPixels() {return pixels;}
 	void flush();
 
 	LeBitmap frame;				/**< Frame buffer */ 
@@ -73,18 +74,18 @@ private:
 	uint32_t color;
 	LeBitmap * bmp;
 
+	uint32_t * pixels;
 	uint32_t * texPixels;
 	uint32_t texSizeU;
 	uint32_t texSizeV;
 	uint32_t texMaskU;
 	uint32_t texMaskV;
 
-#if LE_USE_SIMD == 1
-	v4si color_4;
-#endif // LE_USE_SIMD
+#if LE_USE_SIMD == 1 && LE_USE_SSE2 == 1
+	__m128i color_4;
+#endif // LE_USE_SIMD && LE_USE_SSE2
 
-	int32_t xs[4], ys[4];
-	int32_t ws[4];
+	int32_t xs[4], ys[4], ws[4];
 	int32_t us[4], vs[4];
 };
 

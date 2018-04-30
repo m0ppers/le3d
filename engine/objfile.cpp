@@ -67,7 +67,11 @@ LeObjFile::LeObjFile(const char * filename) :
 	materials(NULL), curMaterial(&defMaterial), noMaterials(0)
 {
 	memset(line, 0, LE_OBJ_MAX_LINE+1);
+#ifdef _MSC_VER
+	if (filename) path = _strdup(filename);
+#else
 	if (filename) path = strdup(filename);
+#endif
 }
 
 LeObjFile::~LeObjFile()
@@ -78,11 +82,11 @@ LeObjFile::~LeObjFile()
 
 /*****************************************************************************/
 /**
-	\fn LeMesh * LeObjFile::loadMesh(int index)
+	\fn LeMesh * LeObjFile::load(int index)
 	\brief Load the mesh of the given index from the file
 	\return pointer to a new loaded mesh, else NULL (error)
 */
-LeMesh * LeObjFile::loadMesh(int index)
+LeMesh * LeObjFile::load(int index)
 {
 	FILE * file = fopen(path, "rb");
 	if (!file) return NULL;
@@ -97,8 +101,11 @@ LeMesh * LeObjFile::loadMesh(int index)
 	if (!materials)	loadMaterials(file);
 	curMaterial = &defMaterial;
 
+	mesh->name[0] = '\0';
+	strncpy(mesh->name, getMeshName(index), LE_OBJ_MAX_NAME);
+	mesh->name[LE_OBJ_MAX_NAME] = '\0';
+	
 	fseek(file, 0, SEEK_SET);
-
 	int object = 0;
 	int len = readLine(file, line, LE_OBJ_MAX_LINE);
 	while (len) {
@@ -117,6 +124,141 @@ LeMesh * LeObjFile::loadMesh(int index)
 	return mesh;
 }
 
+/*****************************************************************************/
+/**
+	\fn LeMesh * LeObjFile::save(int index)
+	\brief Load the mesh of the given index from the file
+	\return pointer to a new loaded mesh, else NULL (error)
+*/
+void LeObjFile::save(const LeMesh * mesh)
+{
+	FILE * objFile = fopen(path, "wb");
+	if (!objFile) return;
+
+	char mtlName[LE_MAX_FILE_NAME+1];
+	mtlName[0] = '\0';
+	char mtlPath[LE_MAX_FILE_PATH+1];
+	mtlPath[0] = '\0';
+	
+	LeGlobal::getFileName(mtlName, LE_MAX_FILE_NAME, path);
+	LeGlobal::getFileDirectory(mtlPath, LE_MAX_FILE_PATH, path);
+	int len = strlen(mtlName);
+	if (len < 3) {
+		fclose(objFile);
+		return;
+	}
+	mtlName[len-3] = 'm';
+	mtlName[len-2] = 't';
+	mtlName[len-1] = 'l';
+	strcat(mtlPath, "/");
+	strcat(mtlPath, mtlName);
+	
+	FILE * mtlFile = fopen(mtlPath, "wb");
+	if (!mtlFile) {
+		fclose(objFile);
+		return;
+	}
+	
+	fseek(mtlFile, 0, SEEK_SET);
+	exportHeader(mtlFile, mesh);
+	exportMaterials(mtlFile, mesh);
+		
+	fseek(objFile, 0, SEEK_SET);
+	exportHeader(objFile, mesh);
+	fprintf(objFile, "mtllib %s\n", mtlName);
+	fprintf(objFile, "o %s\n", mesh->name);
+	exportVertexes(objFile, mesh);
+	exportTexCoords(objFile, mesh);
+	exportTriangles(objFile, mesh);
+	
+	fclose(mtlFile);
+	fclose(objFile);
+}
+
+/*****************************************************************************/
+void LeObjFile::exportHeader(FILE * file, const LeMesh * mesh)
+{
+	fprintf(file, "# LE3D - ObjFile exporter\n");
+	fprintf(file, "# V1.0 - 30.04.18\n");
+	fprintf(file, "# https://github.com/Marzac/le3d\n\n");
+}
+
+void LeObjFile::exportMaterials(FILE * file, const LeMesh * mesh)
+{
+	fprintf(file, "newmtl Default\n");
+	fprintf(file, "Ns 0.8\n");
+	fprintf(file, "Ka 1.0 1.0 1.0\n");
+	fprintf(file, "Kd 1.0 1.0 1.0\n");
+	fprintf(file, "Ks 0.5 0.5 0.5\n\n");
+
+	if (!mesh->texSlotList) return;
+	
+	for (int i = 0; i < mesh->noTriangles; i++) {
+		bool texNew = true;
+		int tex = mesh->texSlotList[i];
+		for (int j = 0; j < i; j++) {
+			if (mesh->texSlotList[j] == tex) {
+				texNew = false;
+				break;
+			}
+		}
+		if (!texNew) continue;
+		
+		char * name = bmpCache.cacheSlots[tex].name;
+		fprintf(file, "newmtl %s\n", name);
+		fprintf(file, "Ns 0.8\n");
+		fprintf(file, "Ka 1.0 1.0 1.0\n");
+		fprintf(file, "Kd 1.0 1.0 1.0\n");
+		fprintf(file, "Ks 0.5 0.5 0.5\n");
+		fprintf(file, "map_Kd %s\n\n", name);
+	}
+}
+
+void LeObjFile::exportVertexes(FILE * file, const LeMesh * mesh)
+{
+	if (!mesh->vertexes) return;
+	for (int i = 0; i < mesh->noVertexes; i++)
+		fprintf(file, "v %f %f %f\n", mesh->vertexes[i].x, mesh->vertexes[i].y, mesh->vertexes[i].z);
+	fprintf(file, "\n");
+}
+
+void LeObjFile::exportTexCoords(FILE * file, const LeMesh * mesh)
+{
+	if (!mesh->texCoords) return;
+	for (int i = 0; i < mesh->noTexCoords; i++)
+		fprintf(file, "vt %f %f\n", mesh->texCoords[i*2+0], mesh->texCoords[i*2+1]);
+	fprintf(file, "\n");
+}
+	
+void LeObjFile::exportTriangles(FILE * file, const LeMesh * mesh)
+{
+	if (!mesh->vertexList) return;
+	if (!mesh->texCoordsList) return;
+	if (!mesh->texSlotList) return;
+	
+	int texLast = -1;
+	for (int i = 0; i < mesh->noTriangles; i++) {
+		int tex = mesh->texSlotList[i];
+		if (texLast != tex) {
+			if (!tex) {
+				fprintf(file, "usemtl Default\n");
+			}else{
+				char * name = bmpCache.cacheSlots[tex].name;
+				fprintf(file, "usemtl %s\n", name);
+			}
+			fprintf(file, "s off\n");
+			texLast = tex;
+		}
+		fprintf(file, "f %i/%i %i/%i %i/%i\n",
+			mesh->vertexList[i*3+0]+1, mesh->texCoordsList[i*3+0]+1,
+			mesh->vertexList[i*3+1]+1, mesh->texCoordsList[i*3+1]+1,
+			mesh->vertexList[i*3+2]+1, mesh->texCoordsList[i*3+2]+1
+		);
+	}
+	fprintf(file, "\n");
+}
+
+/*****************************************************************************/
 /**
 	\fn int LeObjFile::getNoMeshes()
 	\brief Get the number of meshes in the file
@@ -350,9 +492,9 @@ void LeObjFile::importTriangles(FILE * file, LeMesh * mesh)
 	while (len) {
 		if (strncmp(line, objFace, 2) == 0) {
 			readTriangle(line, mesh, index);
-			uint32_t r = cbound(curMaterial->diffuse[0] * 255.0f, 0.0f, 255.0f);
-			uint32_t g = cbound(curMaterial->diffuse[1] * 255.0f, 0.0f, 255.0f);
-			uint32_t b = cbound(curMaterial->diffuse[2] * 255.0f, 0.0f, 255.0f);
+			uint32_t r = (uint32_t) cbound(curMaterial->diffuse[0] * 255.0f, 0.0f, 255.0f);
+			uint32_t g = (uint32_t) cbound(curMaterial->diffuse[1] * 255.0f, 0.0f, 255.0f);
+			uint32_t b = (uint32_t) cbound(curMaterial->diffuse[2] * 255.0f, 0.0f, 255.0f);
 			mesh->colors[index] = r | (g << 8) | (b << 16);
 
 			int slot = 0;
@@ -454,3 +596,5 @@ int LeObjFile::readLine(FILE * file, char * buffer, int len)
 	buffer[readLen] = '\0';
 	return readLen;
 }
+
+/*****************************************************************************/

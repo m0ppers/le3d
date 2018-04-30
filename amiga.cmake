@@ -2,7 +2,7 @@
 SET(CMAKE_SYSTEM_NAME Amiga)
 
 # specify the cross compiler
-SET(CMAKE_C_COMPILER   /home/mop/m68k-amigaos-gcc6/bin/vc)
+#SET(CMAKE_C_COMPILER   /home/mop/m68k-amigaos-gcc6/bin/vc)
 SET(CMAKE_ASM-VASM_COMPILER /home/mop/m68k-amigaos-gcc6/bin/vasmm68k_mot)
 SET(CMAKE_CXX_COMPILER /home/mop/m68k-amigaos-gcc6/bin/m68k-amigaos-g++)
 

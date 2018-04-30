@@ -54,10 +54,11 @@
 class LeRasterizer
 {
 public:
-	LeRasterizer(int width, int height);
+	LeRasterizer(int width = LE_RESOX_DEFAULT, int height = LE_RESOY_DEFAULT);
 	~LeRasterizer();
 
 	void rasterList(LeTriList * trilist);
+	const void * getPixels() {return pixels;}
 	void flush();
 
 	LeBitmap frame;				/**< Frame buffer */ 
@@ -67,24 +68,25 @@ private:
 	void topTriangleZC(int vt, int vm1, int vm2);
 	void bottomTriangleZC(int vm1, int vm2, int vb);
 
-	inline void fillFlatTexZC(float y, float x1, float x2, float w1, float w2, float u1, float u2, float v1, float v2);
-	inline void fillFlatTexAlphaZC(float y, float x1, float x2, float w1, float w2, float u1, float u2, float v1, float v2);
+	inline void fillFlatTexZC(int y, float x1, float x2, float w1, float w2, float u1, float u2, float v1, float v2);
+	inline void fillFlatTexAlphaZC(int y, float x1, float x2, float w1, float w2, float u1, float u2, float v1, float v2);
 
 	uint32_t color;
 	LeBitmap * bmp;
 
+	uint32_t * pixels;
 	uint32_t * texPixels;
 	uint32_t texSizeU;
 	uint32_t texSizeV;
 	uint32_t texMaskU;
 	uint32_t texMaskV;
 
-#if LE_USE_SIMD == 1
-	v4sf texScale_4;
-	v4su texMaskU_4;
-	v4su texMaskV_4;
-	v4su color_1;
-#endif // LE_USE_SIMD
+#if LE_USE_SIMD == 1 && LE_USE_SSE2 == 1
+	__m128  texScale_4;
+	__m128i texMaskU_4;
+	__m128i texMaskV_4;
+	__m128i color_1;
+#endif // LE_USE_SIMD && LE_USE_SSE2
 
 	float xs[4], ys[4], ws[4];
 	float us[4], vs[4];

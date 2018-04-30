@@ -37,8 +37,11 @@
 #include "config.h"
 
 #include <string.h>
+#ifdef _MSC_VER
+#include "vs-dirent.h"
+#else
 #include <dirent.h>
-// #include <sstream>
+#endif
 
 /*****************************************************************************/
 LeMeshCache meshCache;
@@ -47,13 +50,13 @@ LeMeshCache meshCache;
 LeMeshCache::LeMeshCache() :
 	noSlots(0)
 {
-	memset(slots, 0, sizeof(Slot) * LE_MESHCACHE_SLOTS);
+	memset(cacheSlots, 0, sizeof(Slot) * LE_MESHCACHE_SLOTS);
 
 // Create a default mesh
 	LeMesh * defMesh = new LeMesh();
 
 // Register the default mesh
-	Slot * defSlot = &slots[0];
+	Slot * defSlot = &cacheSlots[0];
 	defSlot->mesh = defMesh;
 	strcpy(defSlot->path, "none");
 	strcpy(defSlot->name, "default");
@@ -64,8 +67,19 @@ LeMeshCache::LeMeshCache() :
 
 LeMeshCache::~LeMeshCache()
 {
+	clean();
+}
+
+/*****************************************************************************/
+/**
+	\fn void LeMeshCache::clean()
+	\brief Unload all resources in cache and remove entries
+*/
+void LeMeshCache::clean()
+{
 	for (int i = 0; i < LE_MESHCACHE_SLOTS; i++)
 		deleteSlot(i);
+	noSlots = 0;
 }
 
 /*****************************************************************************/
@@ -78,12 +92,12 @@ LeMeshCache::~LeMeshCache()
 LeMesh * LeMeshCache::loadOBJ(const char * path)
 {
 	if (noSlots >= LE_MESHCACHE_SLOTS) {
-		printf("meshCache: no free slots!\n");
+		printf("meshCache: no free cacheSlots!\n");
 		return NULL;
 	}
 
 	LeObjFile objFile = LeObjFile(path);
-	LeMesh * mesh = objFile.loadMesh(0);
+	LeMesh * mesh = objFile.load(0);
 	if (!mesh) return NULL;
 
 	if (createSlot(mesh, path) < 0) {
@@ -141,7 +155,7 @@ void LeMeshCache::loadDirectory(const char * path)
 int LeMeshCache::createSlot(LeMesh * mesh, const char * path)
 {
 	for (int i = 0; i < LE_MESHCACHE_SLOTS; i++) {
-		Slot * slot = &slots[i];
+		Slot * slot = &cacheSlots[i];
 		if (slot->mesh) continue;
 
 	// Register the mesh
@@ -165,15 +179,9 @@ int LeMeshCache::createSlot(LeMesh * mesh, const char * path)
 */
 void LeMeshCache::deleteSlot(int index)
 {
-	Slot * slot = &slots[index];
-	if (!slot->mesh) return;
-
-	delete slot->mesh;
-	slot->mesh = NULL;
-	slot->path[0] = '\0';
-	slot->name[0] = '\0';
-	slot->flags = 0;
-
+	Slot * slot = &cacheSlots[index];
+	if (slot->mesh) delete slot->mesh;
+	memset(slot, 0, sizeof(Slot));
 	noSlots--;
 }
 
@@ -191,7 +199,7 @@ int LeMeshCache::getFromName(const char * path)
 
 // Search for resource
 	for (int i = 0; i < noSlots; i++) {
-		Slot * slot = &slots[i];
+		Slot * slot = &cacheSlots[i];
 		if (!slot->mesh) continue;
 		if (strcmp(slot->name, name) == 0)
 			return i;

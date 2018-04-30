@@ -9,7 +9,7 @@
 	\version 1.5
 
 	The MIT License (MIT)
-	Copyright (c) 2015-2018 Fr�d�ric Meslin
+	Copyright (c) 2015-2018 Frédéric Meslin
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -114,7 +114,11 @@ typedef struct {
 LeBmpFile::LeBmpFile(const char * filename) :
 	path(NULL)
 {
+#ifdef _MSC_VER
+	if (filename) path = _strdup(filename);
+#else
 	if (filename) path = strdup(filename);
+#endif
 }
 
 LeBmpFile::~LeBmpFile()
@@ -253,7 +257,11 @@ int LeBmpFile::readBitmap(FILE * file, LeBitmap * bitmap)
 	bitmap->dataAllocated = true;
 
 // Load bitmap data
+#if _MSC_VER && !defined(__MINGW32__)
+	uint8_t * buffer = (uint8_t *) alloca(srcScan);
+#else
 	uint8_t buffer[srcScan];
+#endif
 	uint8_t * data = (uint8_t *) bitmap->data;
 
 	int dstScan = bitmap->tx * sizeof(uint32_t);

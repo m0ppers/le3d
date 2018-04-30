@@ -11,6 +11,7 @@ extern "C" {
 	float copysignf(float,float);
 	float ceilf(float);
 	float tanf(float);
+	float fabsf(float);
 }
 
 #endif

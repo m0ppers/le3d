@@ -49,6 +49,7 @@ LeMesh::LeMesh() :
 	normals(NULL), shades(NULL),
 	allocated(false)
 {
+	memset(name, 0, LE_OBJ_MAX_NAME+1);
 	updateMatrix();
 }
 
@@ -65,6 +66,7 @@ LeMesh::LeMesh(LeVertex vertexes[], int noVertexes,
 	normals(NULL), shades(NULL),
 	allocated(false)
 {
+	memset(name, 0, LE_OBJ_MAX_NAME+1);
 	updateMatrix();
 }
 
@@ -96,7 +98,8 @@ void LeMesh::allocate(int noVertexes, int noTexCoords, int noTriangles)
 	texSlotList = new int[noTriangles];
 
 	colors = new uint32_t[noTriangles];
-
+	memset(colors, 0xFF, sizeof(uint32_t) * noTriangles);
+	
 	this->noTriangles = noTriangles;
 	allocated = true;
 }

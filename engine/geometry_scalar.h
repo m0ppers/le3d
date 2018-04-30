@@ -142,6 +142,15 @@ struct LeVertex
 		return r;
 	}
 	
+	LeVertex operator / (float v) const
+	{
+		float iv = 1.0f / v;
+		LeVertex r;
+		r.x = x * iv;
+		r.y = y * iv;
+		r.z = z * iv;
+		return r;
+	}
 	
 	LeVertex operator *= (LeVertex v)
 	{

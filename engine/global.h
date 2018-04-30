@@ -72,4 +72,46 @@
 		int log2i32(int n);																	/** Compute the log2 of a 32bit integer */
 	};
 
+/*****************************************************************************/
+/** Memory aligned allocation functions */
+	#ifdef __MINGW32__
+		#include <malloc.h>
+	#elif defined(__unix__) || defined(__unix)
+		#ifndef _aligned_malloc
+			#define _aligned_malloc(s, a) aligned_alloc(a, s)
+		#endif
+		#ifndef _aligned_free
+			#define _aligned_free(p) free(p)
+		#endif
+	#elif __APPLE__
+		void * _aligned_malloc(size_t size, size_t alignment) {
+			void * buffer;
+			posix_memalign(&buffer, alignment, size);
+			return buffer;
+		}
+		#define _aligned_free  free
+	#endif
+	
+	#if LE_USE_SIMD == 1
+		void * operator new(size_t size) {
+			return _aligned_malloc(size, 16);
+		}
+		void * operator new[](size_t size) {
+			return _aligned_malloc(size, 16);
+		}
+		void operator delete(void * ptr) {
+			_aligned_free(ptr);
+		}
+		void operator delete[](void * ptr) {
+			_aligned_free(ptr);
+		}
+	#endif
+	
+/*****************************************************************************/
+/** Intrinsic equivalent functions */
+#ifdef _MSC_VER
+	#include <intrin.h>
+	int __builtin_ffs(int x);
+#endif
+
 #endif // LE_GLOBAL_H

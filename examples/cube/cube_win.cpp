@@ -15,19 +15,15 @@
 #include <stdio.h>
 
 /*****************************************************************************/
-const int resoX = 640;
-const int resoY = 480;
-
-/*****************************************************************************/
 int main()
 {
 	LeGamePad::setup();
 
 /** Create application objects */
-	LeWindow	 window		= LeWindow("Le3d: cube example", resoX, resoY);
-	LeDraw		 draw		= LeDraw(window.getContext(), resoX, resoY);
-	LeRenderer	 renderer	= LeRenderer(resoX, resoY);
-	LeRasterizer rasterizer = LeRasterizer(resoX, resoY);
+	LeWindow	 window		= LeWindow("Le3d: cube example");
+	LeDraw		 draw		= LeDraw(window.getContext());
+	LeRenderer	 renderer	= LeRenderer();
+	LeRasterizer rasterizer = LeRasterizer();
 
 /** Load the assets (textures then 3D models) */
 	bmpCache.loadDirectory("assets");
@@ -35,7 +31,7 @@ int main()
 
 /** Retrieve the 3D model */
 	int crateSlot = meshCache.getFromName("crate.obj");
-	LeMesh * crate = meshCache.slots[crateSlot].mesh;
+	LeMesh * crate = meshCache.cacheSlots[crateSlot].mesh;
 
 /** Create three lights */
 	LeLight light1(LE_LIGHT_DIRECTIONAL, 0xFF4040);
@@ -69,7 +65,7 @@ int main()
 		timing.waitNextFrame();
 
 	/** Copy render frame to window context */
-		draw.setPixels(rasterizer.frame.data);
+		draw.setPixels(rasterizer.getPixels());
 
 	/** Update model transforms */
 		crate->angle += LeVertex(0.1f, 2.0f, 0.0f);
