@@ -45,9 +45,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <proto/timer.h>
+
 #ifdef AMMX
 #include "ammx/ammx.h"
 #endif
+
+static int* cache = 0;
 
 /*****************************************************************************/
 LeRasterizer::LeRasterizer(int width, int height) :
@@ -69,6 +73,17 @@ LeRasterizer::LeRasterizer(int width, int height) :
 	frame.data = ((uint32_t *) frame.data) + frame.tx;
 	frame.ty -= 2;
 	frame.clear(0);
+
+	// printf("PREKALK!\n");
+	// // BRUUUUUUUUUUUUUTE FORCE :D
+	// cache = (int*) malloc((1 << 24) * sizeof(4));
+	// // int32_t z = (1 << (24 + 4)) / (w1 >> (12 - 4));
+	// int i;
+
+	// for (i=INT_MIN >> 8;i<0;i++) {
+	// 	cache[-i] = (1 << (24 + 4)) / i;
+	// }
+	// printf("PREKALK done %d %x %x %x %x!\n", i, INT_MIN, INT_MIN >> 8, -(INT_MIN >> 8), -(-1));
 }
 
 LeRasterizer::~LeRasterizer()
@@ -76,6 +91,8 @@ LeRasterizer::~LeRasterizer()
 	frame.data = ((uint32_t *) frame.data) - frame.tx;
 	frame.ty += 2;
 	frame.deallocate();
+
+	free(cache);
 }
 
 /*****************************************************************************/
@@ -96,32 +113,71 @@ void LeRasterizer::flush()
 */
 void LeRasterizer::rasterList(LeTriList * trilist)
 {
+			static bool test = true;
+		struct EClockVal start;
+		struct EClockVal current;
+					if (test) {
+			ReadEClock(&start);
+		}
 	trilist->zSort();
+			if (test) {
+			ReadEClock(&current);
+			printf("zsort %u\n", current.ev_lo - start.ev_lo);
+		}
 
 	for (int i = 0; i < trilist->noValid; i++) {
+
 		LeTriangle * tri = &trilist->triangles[trilist->srcIndices[i]];
 
+		if (test) {
+			ReadEClock(&start);
+		}
+
 	// Retrieve the material
+			if (test) {
+			ReadEClock(&start);
+		}
 		LeBmpCache::Slot * slot = &bmpCache.slots[tri->tex];
 		if (slot->flags & LE_BMPCACHE_ANIMATION)
 			bmp = &slot->extras[slot->cursor];
 		else bmp = slot->bitmap;
 		color = tri->color;
+		if (test) {
+			ReadEClock(&current);
+			printf("material %u\n", current.ev_lo - start.ev_lo);
+		}
+
 
 	// Convert position coordinates
+			if (test) {
+			ReadEClock(&start);
+		}
 		xs[0] = (int32_t) (tri->xs[0]) << 16;
 		xs[1] = (int32_t) (tri->xs[1]) << 16;
 		xs[2] = (int32_t) (tri->xs[2]) << 16;
 		ys[0] = (int32_t) (tri->ys[0]);
 		ys[1] = (int32_t) (tri->ys[1]);
 		ys[2] = (int32_t) (tri->ys[2]);
-
+				if (test) {
+			ReadEClock(&current);
+			printf("convert position %u\n", current.ev_lo - start.ev_lo);
+		}
+		if (test) {
+			ReadEClock(&start);
+		}
 		const float sw = 65536.0f * 4096.0f;
 		ws[0] = (int32_t) (tri->zs[0] * sw);
 		ws[1] = (int32_t) (tri->zs[1] * sw);
 		ws[2] = (int32_t) (tri->zs[2] * sw);
+				if (test) {
+			ReadEClock(&current);
+			printf("ws %u\n", current.ev_lo - start.ev_lo);
+		}
 
 	// Sort vertexes vertically
+			if (test) {
+			ReadEClock(&start);
+		}
 		int vt = 0, vb = 0, vm1 = 0, vm2 = 3;
 		if (ys[0] < ys[1]) {
 			if (ys[0] < ys[2]) {
@@ -139,6 +195,10 @@ void LeRasterizer::rasterList(LeTriList * trilist)
 			}else{
 				vt = 2; vm1 = 1; vb = 0;
 			}
+		}
+				if (test) {
+			ReadEClock(&current);
+			printf("ifferei %u\n", current.ev_lo - start.ev_lo);
 		}
 
 	// Get vertical span
@@ -160,7 +220,9 @@ void LeRasterizer::rasterList(LeTriList * trilist)
 			bmp = bmp->mipmaps[l];
 		}
 	#endif
-
+		if (test) {
+			ReadEClock(&start);
+		}
 	// Retrieve texture information
 		texPixels = (uint32_t *) bmp->data;
 		texSizeU = bmp->txP2;
@@ -168,24 +230,46 @@ void LeRasterizer::rasterList(LeTriList * trilist)
 		texMaskU = (1 << bmp->txP2) - 1;
 		texMaskV = (1 << bmp->tyP2) - 1;
 
+				if (test) {
+			ReadEClock(&current);
+			printf("texmask %u\n", current.ev_lo - start.ev_lo);
+		}
+
 	#if LE_USE_SIMD == 1 && LE_USE_SSE2 == 1
 		v4si zv = {0, 0, 0, 0};
 		color_4.v = (V4SI) _mm_load_ss((float *) &color);
 		color_4.v = (V4SI) _mm_unpacklo_epi8((__m128i)color_4.v, (__m128i)zv.v);
 	#endif
-
+		if (test) {
+			ReadEClock(&start);
+		}
 	// Convert texture coordinates
 		const float su = (float) (65536 << bmp->txP2);
 		us[0] = (int32_t) (tri->us[0] * su);
 		us[1] = (int32_t) (tri->us[1] * su);
 		us[2] = (int32_t) (tri->us[2] * su);
 
+				if (test) {
+			ReadEClock(&current);
+			printf("conv tex coordinates %u\n", current.ev_lo - start.ev_lo);
+		}
+		if (test) {
+			ReadEClock(&start);
+		}
 		const float sv = (float) (65536 << bmp->tyP2);
 		vs[0] = (int32_t) (tri->vs[0] * sv);
 		vs[1] = (int32_t) (tri->vs[1] * sv);
 		vs[2] = (int32_t) (tri->vs[2] * sv);
 
+				if (test) {
+			ReadEClock(&current);
+			printf("vs %u\n", current.ev_lo - start.ev_lo);
+		}
+
 	// Compute the mean vertex
+				if (test) {
+			ReadEClock(&start);
+		}
 		int n = ((ys[vm1] - ys[vt]) << 16) / dy;
 		xs[3] = (((int64_t) (xs[vb] - xs[vt]) * n) >> 16) + xs[vt];
 		ys[3] = ys[vm1];
@@ -193,13 +277,42 @@ void LeRasterizer::rasterList(LeTriList * trilist)
 		us[3] = (((int64_t) (us[vb] - us[vt]) * n) >> 16) + us[vt];
 		vs[3] = (((int64_t) (vs[vb] - vs[vt]) * n) >> 16) + vs[vt];
 
+				if (test) {
+			ReadEClock(&current);
+			printf("mean vertex %u\n", current.ev_lo - start.ev_lo);
+		}
+
 	// Sort vertexes horizontally
+		if (test) {
+			ReadEClock(&start);
+		}
 		int dx = xs[vm2] - xs[vm1];
 		if (dx < 0) {int t = vm1; vm1 = vm2; vm2 = t;}
 
+				if (test) {
+			ReadEClock(&current);
+			printf("material %u\n", current.ev_lo - start.ev_lo);
+		}
+
 	// Render the triangle
+
+		if (test) {
+			ReadEClock(&start);
+		}
 		topTriangleZC(vt, vm1, vm2);
+		if (test) {
+			ReadEClock(&current);
+			printf("top %u\n", current.ev_lo - start.ev_lo);
+		}
+		if (test) {
+			ReadEClock(&start);
+		}
 		bottomTriangleZC(vm1, vm2, vb);
+		if (test) {
+			ReadEClock(&current);
+			printf("bottom %u\n", current.ev_lo - start.ev_lo);
+		}
+		test = false;
 	}
 }
 
@@ -418,6 +531,7 @@ inline void LeRasterizer::fillFlatTexAlphaZC(int y, int x1, int x2, int w1, int 
 
 	for (int x = x1; x <= x2; x++) {
 		int32_t z = (1 << (24 + 4)) / (w1 >> (12 - 4));
+
 		uint32_t tu = ((u1 * z) >> 24) & texMaskU;
 		uint32_t tv = ((v1 * z) >> 24) & texMaskV;
 		uint8_t * t = (uint8_t *) &texPixels[tu + (tv << texSizeU)];
@@ -434,6 +548,7 @@ inline void LeRasterizer::fillFlatTexAlphaZC(int y, int x1, int x2, int w1, int 
 	}
 }
 #else
+	static bool has = false;
 inline void LeRasterizer::fillFlatTexZC(int y, int x1, int x2, int w1, int w2, int u1, int u2, int v1, int v2)
 {
 	uint8_t * c = (uint8_t *) &color;
@@ -444,10 +559,16 @@ inline void LeRasterizer::fillFlatTexZC(int y, int x1, int x2, int w1, int w2, i
 	int au = (u2 - u1) / d;
 	int av = (v2 - v1) / d;
 	int aw = (w2 - w1) / d;
+	
+	if (!has) {
+		printf("W1: %d %x %x %x %x\n", w1, w1, -1 << 23, INT_MIN >> 8, -1 & 0x0FFFFFFF);
+		has =true;
+	}
 
 	uint8_t * p = (uint8_t *) (x1 + y * frame.tx + (uint32_t *) frame.data);
 	for (int x = x1; x <= x2; x++) {
 		int32_t z = (1 << (24 + 4)) / (w1 >> (12 - 4));
+		//int32_t z = cache[-(w1 >> 8)];
 		uint32_t tu = ((u1 * z) >> 24) & texMaskU;
 		uint32_t tv = ((v1 * z) >> 24) & texMaskV;
 		uint8_t * t = (uint8_t *) &texPixels[tu + (tv << texSizeU)];

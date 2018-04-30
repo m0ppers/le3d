@@ -10,12 +10,13 @@
 #include "engine/le3d.h"
 #include "tools/timing.h"
 
+#include <proto/timer.h>
 #include <stdlib.h>
 #include <stdio.h>
 
 /*****************************************************************************/
 const int resoX = 640;
-const int resoY = 480;
+const int resoY = 360;
 
 /*****************************************************************************/
 int main()
@@ -55,7 +56,12 @@ int main()
 	timing.firstFrame();
 
 /** Program main loop */
+	int frameCounter = 0;
 	while (window.update()) {
+		struct EClockVal start;
+		struct EClockVal current;
+		bool test = frameCounter == 10;
+
 		// XEvent event;
 	//	XNextEvent(usedXDisplay, &event);
 
@@ -63,28 +69,118 @@ int main()
 		// 	break;
 
 	/** Wait for next frame */
+		if (test) {
+			ReadEClock(&start);
+		}
 		timing.waitNextFrame();
+		if (test) {
+			ReadEClock(&current);
+			printf("timing.waitNextFrame %u\n", current.ev_lo - start.ev_lo);
+		}
 
 	// /** Copy render frame to window context */
+		if (!test) {
+			ReadEClock(&start);
+		}
+
 		draw.setPixels(rasterizer.frame.data);
+		if (test) {
+			ReadEClock(&current);
+			printf("draw.setPixels %u\n", current.ev_lo - start.ev_lo);
+		}
 
 	/** Update model transforms */
+		if (test) {
+			ReadEClock(&start);
+		}
+
 		crate->angle += LeVertex(0.1f, 2.0f, 0.0f);
 		crate->updateMatrix();
+		if (test) {
+			ReadEClock(&current);
+			printf("crate->updateMatrix %u\n", current.ev_lo - start.ev_lo);
+		}
+
 
 	/** Light model */
+		if (test) {
+			ReadEClock(&start);
+		}
+
 		LeLight::black(crate);
+		if (test) {
+			ReadEClock(&current);
+			printf("LeLight::black %u\n", current.ev_lo - start.ev_lo);
+		}
+		if (test) {
+			ReadEClock(&start);
+		}
+
 		light1.shine(crate);
+		if (test) {
+			ReadEClock(&current);
+			printf("light1.shine %u\n", current.ev_lo - start.ev_lo);
+		}
+		if (test) {
+			ReadEClock(&start);
+		}
+
 		light2.shine(crate);
+		if (test) {
+			ReadEClock(&current);
+			printf("light2.shine %u\n", current.ev_lo - start.ev_lo);
+		}
+		if (test) {
+			ReadEClock(&start);
+		}
+
 		light3.shine(crate);
+		if (test) {
+			ReadEClock(&current);
+			printf("light3.shine %u\n", current.ev_lo - start.ev_lo);
+		}
 
 	/** Render the 3D model */
+		if (test) {
+			ReadEClock(&start);
+		}
+
 		renderer.render(crate);
+		if (test) {
+			ReadEClock(&current);
+			printf("renderer.render %u\n", current.ev_lo - start.ev_lo);
+		}
 
 	/** Draw the triangles */
+		if (test) {
+			ReadEClock(&start);
+		}
+
 		rasterizer.flush();
+		if (test) {
+			ReadEClock(&current);
+			printf("rasterizer.flush() %u\n", current.ev_lo - start.ev_lo);
+		}
+		if (test) {
+			ReadEClock(&start);
+		}
+
 		rasterizer.rasterList(renderer.getTriangleList());
+		if (test) {
+			ReadEClock(&current);
+			printf("rasterizer.rasterList %u\n", current.ev_lo - start.ev_lo);
+		}
+		if (test) {
+			ReadEClock(&start);
+		}
+
 		renderer.flush();
+		if (test) {
+			ReadEClock(&current);
+			printf("renderer.flush() %u\n", current.ev_lo - start.ev_lo);
+		}
+
+		frameCounter++;
 	}
 
 	timing.lastFrame();
