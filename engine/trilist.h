@@ -9,7 +9,7 @@
 	\version 1.5
 
 	The MIT License (MIT)
-	Copyright (c) 2015-2018 Frédéric Meslin
+	Copyright (c) 2015-2018 Frï¿½dï¿½ric Meslin
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,8 @@
 #include "global.h"
 #include "config.h"
 
+#include "color.h"
+
 /*****************************************************************************/
 /**
 	\class LeTriangle
@@ -49,7 +51,7 @@ struct LeTriangle
 	float us[4];		/**< u texture coordinate of vertexes */
 	float vs[4];		/**< v texture coordinate of vertexes */
 	float vd;			/**< average view distance */
-	uint32_t color;		/**< solid color */
+	LeColor color;		/**< solid color */
 	int tex;			/**< texture slot */
 };
 

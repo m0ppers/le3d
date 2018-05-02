@@ -9,7 +9,7 @@
 	\version 1.5
 
 	The MIT License (MIT)
-	Copyright (c) 2015-2018 Frédéric Meslin
+	Copyright (c) 2015-2018 Frï¿½dï¿½ric Meslin
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -117,9 +117,10 @@ LeWindow::~LeWindow()
 	\fn void LeWindow::update()
 	\brief Update window state and process events
 */
-void LeWindow::update()
+bool LeWindow::update()
 {
 	// On MS Windows OS, this is done via callbacks
+	return true;
 }
 
 /*****************************************************************************/

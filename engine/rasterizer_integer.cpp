@@ -45,19 +45,24 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "amiga/profiling.h"
+#ifdef AMIGA
 #include <proto/timer.h>
+#endif
 
 #ifdef AMMX
 #include "ammx/ammx.h"
 #endif
 
 static int* cache = 0;
+static bool print_c = 1;
+AMIGA_PROFILING_PRELUDE
 
 /*****************************************************************************/
 LeRasterizer::LeRasterizer(int width, int height) :
 	frame(),
 	background(0),
-	color(0xFFFFFF),
+	color(0xFFFFFF00),
 	bmp(NULL),
 	texPixels(NULL),
 	texSizeU(0), texSizeV(0),
@@ -82,7 +87,7 @@ LeRasterizer::LeRasterizer(int width, int height) :
 	// 	cache[-i] = (1 << (24 + 4)) / i;
 	// }
 	// printf("PREKALK done %d %x %x %x %x!\n", i, INT_MIN, INT_MIN >> 8, -(INT_MIN >> 8), -(-1));
-	pixels = ((uint32_t *) frame.data) + frame.tx;
+	pixels = ((LeColor *) frame.data) + frame.tx;
 }
 
 LeRasterizer::~LeRasterizer()
@@ -110,71 +115,51 @@ void LeRasterizer::flush()
 */
 void LeRasterizer::rasterList(LeTriList * trilist)
 {
-			static bool test = true;
-		struct EClockVal start;
-		struct EClockVal current;
-					if (test) {
-			ReadEClock(&start);
-		}
+	AMIGA_PROFILING_START;
 	trilist->zSort();
-			if (test) {
-			ReadEClock(&current);
-			printf("zsort %u\n", current.ev_lo - start.ev_lo);
-		}
+	AMIGA_PROFILING_STOP("zsort");
 
+	static bool doit = true;
 	for (int i = 0; i < trilist->noValid; i++) {
 
 		LeTriangle * tri = &trilist->triangles[trilist->srcIndices[i]];
 
-		if (test) {
-			ReadEClock(&start);
-		}
-
 	// Retrieve the material
-			if (test) {
-			ReadEClock(&start);
-		}
+		AMIGA_PROFILING_START;
 		LeBmpCache::Slot * slot = &bmpCache.cacheSlots[tri->tex];
 		if (slot->flags & LE_BMPCACHE_ANIMATION)
 			bmp = &slot->extras[slot->cursor];
 		else bmp = slot->bitmap;
+		
 		color = tri->color;
-		if (test) {
-			ReadEClock(&current);
-			printf("material %u\n", current.ev_lo - start.ev_lo);
+		if (doit) {
+			uint8_t * c = (uint8_t *) &color;
+			printf("COLOR: %d %d %d %d\n", c[0], c[1], c[2], c[3]);
+			doit = false;
 		}
+
+		AMIGA_PROFILING_STOP("material");
+
 
 
 	// Convert position coordinates
-			if (test) {
-			ReadEClock(&start);
-		}
+		AMIGA_PROFILING_START;
 		xs[0] = (int32_t) (tri->xs[0]) << 16;
 		xs[1] = (int32_t) (tri->xs[1]) << 16;
 		xs[2] = (int32_t) (tri->xs[2]) << 16;
 		ys[0] = (int32_t) (tri->ys[0]);
 		ys[1] = (int32_t) (tri->ys[1]);
 		ys[2] = (int32_t) (tri->ys[2]);
-				if (test) {
-			ReadEClock(&current);
-			printf("convert position %u\n", current.ev_lo - start.ev_lo);
-		}
-		if (test) {
-			ReadEClock(&start);
-		}
+		AMIGA_PROFILING_STOP("convert_position");
+		AMIGA_PROFILING_START;
 		const float sw = 65536.0f * 4096.0f;
 		ws[0] = (int32_t) (tri->zs[0] * sw);
 		ws[1] = (int32_t) (tri->zs[1] * sw);
 		ws[2] = (int32_t) (tri->zs[2] * sw);
-				if (test) {
-			ReadEClock(&current);
-			printf("ws %u\n", current.ev_lo - start.ev_lo);
-		}
+		AMIGA_PROFILING_STOP("ws");
 
 	// Sort vertexes vertically
-			if (test) {
-			ReadEClock(&start);
-		}
+		AMIGA_PROFILING_START;
 		int vt = 0, vb = 0, vm1 = 0, vm2 = 3;
 		if (ys[0] < ys[1]) {
 			if (ys[0] < ys[2]) {
@@ -193,10 +178,7 @@ void LeRasterizer::rasterList(LeTriList * trilist)
 				vt = 2; vm1 = 1; vb = 0;
 			}
 		}
-				if (test) {
-			ReadEClock(&current);
-			printf("ifferei %u\n", current.ev_lo - start.ev_lo);
-		}
+		AMIGA_PROFILING_STOP("iffing");
 
 	// Get vertical span
 		int dy = ys[vb] - ys[vt];
@@ -217,20 +199,15 @@ void LeRasterizer::rasterList(LeTriList * trilist)
 			bmp = bmp->mipmaps[l];
 		}
 	#endif
-		if (test) {
-			ReadEClock(&start);
-		}
+		AMIGA_PROFILING_START;
 	// Retrieve texture information
-		texPixels = (uint32_t *) bmp->data;
+		texPixels = (LeColor *) bmp->data;
 		texSizeU = bmp->txP2;
 		texSizeV = bmp->tyP2;
 		texMaskU = (1 << bmp->txP2) - 1;
 		texMaskV = (1 << bmp->tyP2) - 1;
 
-				if (test) {
-			ReadEClock(&current);
-			printf("texmask %u\n", current.ev_lo - start.ev_lo);
-		}
+		AMIGA_PROFILING_STOP("texmask");
 
 	#if LE_USE_SIMD == 1 && LE_USE_SSE2 == 1
 		__m128i zv = _mm_set1_epi32(0);
@@ -238,36 +215,25 @@ void LeRasterizer::rasterList(LeTriList * trilist)
 		color_4 = _mm_unpacklo_epi32(color_4, color_4);
 		color_4 = _mm_unpacklo_epi8(color_4, zv);
 	#endif
-		if (test) {
-			ReadEClock(&start);
-		}
+
+		AMIGA_PROFILING_START;
 	// Convert texture coordinates
 		const float su = (float) (65536 << bmp->txP2);
 		us[0] = (int32_t) (tri->us[0] * su);
 		us[1] = (int32_t) (tri->us[1] * su);
 		us[2] = (int32_t) (tri->us[2] * su);
 
-				if (test) {
-			ReadEClock(&current);
-			printf("conv tex coordinates %u\n", current.ev_lo - start.ev_lo);
-		}
-		if (test) {
-			ReadEClock(&start);
-		}
+		AMIGA_PROFILING_STOP("conv tex coordinates");
+		AMIGA_PROFILING_START;
 		const float sv = (float) (65536 << bmp->tyP2);
 		vs[0] = (int32_t) (tri->vs[0] * sv);
 		vs[1] = (int32_t) (tri->vs[1] * sv);
 		vs[2] = (int32_t) (tri->vs[2] * sv);
 
-				if (test) {
-			ReadEClock(&current);
-			printf("vs %u\n", current.ev_lo - start.ev_lo);
-		}
+		AMIGA_PROFILING_STOP("vs");
 
 	// Compute the mean vertex
-				if (test) {
-			ReadEClock(&start);
-		}
+		AMIGA_PROFILING_START;
 		int n = ((ys[vm1] - ys[vt]) << 16) / dy;
 		xs[3] = (((int64_t) (xs[vb] - xs[vt]) * n) >> 16) + xs[vt];
 		ys[3] = ys[vm1];
@@ -275,43 +241,25 @@ void LeRasterizer::rasterList(LeTriList * trilist)
 		us[3] = (((int64_t) (us[vb] - us[vt]) * n) >> 16) + us[vt];
 		vs[3] = (((int64_t) (vs[vb] - vs[vt]) * n) >> 16) + vs[vt];
 
-				if (test) {
-			ReadEClock(&current);
-			printf("mean vertex %u\n", current.ev_lo - start.ev_lo);
-		}
+		AMIGA_PROFILING_STOP("mean vertex");
 
 	// Sort vertexes horizontally
-		if (test) {
-			ReadEClock(&start);
-		}
+		AMIGA_PROFILING_START;
 		int dx = xs[vm2] - xs[vm1];
 		if (dx < 0) {int t = vm1; vm1 = vm2; vm2 = t;}
-
-				if (test) {
-			ReadEClock(&current);
-			printf("material %u\n", current.ev_lo - start.ev_lo);
-		}
+		AMIGA_PROFILING_STOP("material");
 
 	// Render the triangle
-
-		if (test) {
-			ReadEClock(&start);
-		}
+		AMIGA_PROFILING_START;
 		topTriangleZC(vt, vm1, vm2);
-		if (test) {
-			ReadEClock(&current);
-			printf("top %u\n", current.ev_lo - start.ev_lo);
-		}
-		if (test) {
-			ReadEClock(&start);
-		}
+		AMIGA_PROFILING_STOP("top");
+		AMIGA_PROFILING_START;
 		bottomTriangleZC(vm1, vm2, vb);
-		if (test) {
-			ReadEClock(&current);
-			printf("bottom %u\n", current.ev_lo - start.ev_lo);
-		}
-		test = false;
+		AMIGA_PROFILING_STOP("bottom");
+
+		AMIGA_PROFILING_POSTLUDE;
 	}
+	AMIGA_PROFILING_POSTLUDE;
 }
 
 /*****************************************************************************/
@@ -553,6 +501,11 @@ static bool has = false;
 inline void LeRasterizer::fillFlatTexZC(int y, int x1, int x2, int w1, int w2, int u1, int u2, int v1, int v2)
 {
 	uint8_t * c = (uint8_t *) &color;
+	if (print_c) {
+		uint8_t* t = (uint8_t*) texPixels;
+		printf("C: %u %u %u texPixels %u %u %u\n", c[0], c[1], c[2], t[0], t[1], t[2]);
+		print_c = false;
+	}
 
 	short d = x2 - x1;
 	if (d == 0) return;
@@ -561,10 +514,6 @@ inline void LeRasterizer::fillFlatTexZC(int y, int x1, int x2, int w1, int w2, i
 	int av = (v2 - v1) / d;
 	int aw = (w2 - w1) / d;
 	
-	if (!has) {
-		printf("W1: %d %x %x %x %x\n", w1, w1, -1 << 23, INT_MIN >> 8, -1 & 0x0FFFFFFF);
-		has =true;
-	}
 
 	uint8_t * p = (uint8_t *) (x1 + y * frame.tx + pixels);
 	for (int x = x1; x <= x2; x++) {
@@ -572,10 +521,16 @@ inline void LeRasterizer::fillFlatTexZC(int y, int x1, int x2, int w1, int w2, i
 		uint32_t tu = (((int64_t) u1 * z) >> 24) & texMaskU;
 		uint32_t tv = (((int64_t) v1 * z) >> 24) & texMaskV;
 		uint8_t * t = (uint8_t *) &texPixels[tu + (tv << texSizeU)];
-
+		// p[0] = t[0];//(t[0] * c[0]) >> 8;
+		// p[1] = t[1];//(t[1] * c[1]) >> 8;
+		// p[2] = t[2];//(t[2] * c[2]) >> 8;
 		p[0] = (t[0] * c[0]) >> 8;
 		p[1] = (t[1] * c[1]) >> 8;
 		p[2] = (t[2] * c[2]) >> 8;
+	if (!has) {
+		printf("DINGS: %u %u %u %u %u %u %u %u %u\n", c[0], c[1], c[2], t[0], t[1], t[2], p[0], p[1], p[2]);
+		has =true;
+	}
 
 		p += 4;
 

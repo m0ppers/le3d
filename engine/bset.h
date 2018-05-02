@@ -9,7 +9,7 @@
 	\version 1.5
 
 	The MIT License (MIT)
-	Copyright (c) 2015-2018 Frédéric Meslin
+	Copyright (c) 2015-2018 Frï¿½dï¿½ric Meslin
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,7 @@
 #include "global.h"
 #include "config.h"
 
+#include "color.h"
 #include "geometry.h"
 
 /*****************************************************************************/
@@ -77,14 +78,14 @@ public:
 // Static billboards data
 	LeVertex * places;		/**< Position per billboard */ 
 	float * sizes;			/**< Size (x, y) per billboard */
-	uint32_t * colors;		/**< Color per billboard */
+	LeColor * colors;		/**< Color per billboard */
 	int * texSlots;			/**< Texture slot per billboard */
 	int * flags;			/**< Flag per billboard */
 	
 	int noBillboards;		/**< Number of allocated billboards */
 
 // Computed billboards data
-	uint32_t * shades;		/**< Shade color per billboard (lighting) */
+	LeColor * shades;		/**< Shade color per billboard (lighting) */
 	bool allocated;			/**< Has data been allocated */
 };
 

@@ -38,6 +38,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef AMIGA
 inline void from_little_endian(uint16_t &v) {
 	v = (v << 8) | (v >> 8);
 }
@@ -59,6 +60,20 @@ inline void from_little_endian(int32_t &v) {
 	from_little_endian(v1);
 	v = (int32_t) v1;
 }
+#else
+inline void from_little_endian(uint16_t &v) {
+}
+
+inline void from_little_endian(uint32_t &v) {
+}
+
+// probably ineffecient but should work for now :)
+inline void from_little_endian(int16_t &v) {
+}
+
+inline void from_little_endian(int32_t &v) {
+}
+#endif
 
 /*****************************************************************************/
 #pragma pack(push, 1)
@@ -253,7 +268,7 @@ int LeBmpFile::readBitmap(FILE * file, LeBitmap * bitmap)
 	srcScan = bitmap->tx * (info.biBitCount >> 3);
 	srcScan = (srcScan + 0x3) & ~0x3;
 
-	bitmap->data = new uint32_t[bitmap->tx * bitmap->ty];
+	bitmap->data = new LeColor[bitmap->tx * bitmap->ty];
 	bitmap->dataAllocated = true;
 
 // Load bitmap data
@@ -269,6 +284,7 @@ int LeBmpFile::readBitmap(FILE * file, LeBitmap * bitmap)
 	if (upsidedown)
 		data += dstScan * (bitmap->ty - 1);
 
+	bool doit = true;
 	if (info.biBitCount == 32) {
 	// Parse a 32 bits image
 		for (int y = 0; y < bitmap->ty; y ++) {
@@ -291,19 +307,27 @@ int LeBmpFile::readBitmap(FILE * file, LeBitmap * bitmap)
 	// Parse a 24 bits image
 		for (int y = 0; y < bitmap->ty; y ++) {
 			fread(buffer, srcScan, 1, file);
-			uint32_t * d = (uint32_t *) data;
+			LeColor * d = (LeColor *) data;
 			uint8_t	 * s = buffer;
 			for (int i = 0; i < bitmap->tx; i ++) {
-				uint32_t r, g, b;
-				b = * s++;
-				g = * s++;
-				r = * s++;
-				* d++ = (r << 16) | (g << 8) | b;
+				d->b = * s++;
+				d->g = * s++;
+				d->r = * s++;
+
+				if (doit) {
+					printf("RGB: %d %d %d\n", d->r, d->g, d->b);
+					doit = false;
+				}
+				d++;
 			}
 			if (upsidedown) data -= dstScan;
 			else data += dstScan;
 		}
 	}
+
+	uint8_t* c = (uint8_t*) bitmap->data;
+	printf("BMPDATA: %d %d %d %d\n", c[0], c[1], c[2], c[3]);
+
 
 	return 1;
 }

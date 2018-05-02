@@ -9,7 +9,7 @@
 	\version 1.5
 
 	The MIT License (MIT)
-	Copyright (c) 2015-2018 Frédéric Meslin
+	Copyright (c) 2015-2018 Frï¿½dï¿½ric Meslin
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -56,7 +56,7 @@ LeMesh::LeMesh() :
 LeMesh::LeMesh(LeVertex vertexes[], int noVertexes,
 			float texCoords[], int noTexCoords,
 			int vertexList[], int texCoordsList[],
-			uint32_t colors[], int noTriangles) :
+			LeColor colors[], int noTriangles) :
 	view(),
 	pos(), scale(1.0f, 1.0f, 1.0f), angle(),
 	vertexes(vertexes), noVertexes(noVertexes),
@@ -97,8 +97,8 @@ void LeMesh::allocate(int noVertexes, int noTexCoords, int noTriangles)
 	texCoordsList = new int[noTriangles * 3];
 	texSlotList = new int[noTriangles];
 
-	colors = new uint32_t[noTriangles];
-	memset(colors, 0xFF, sizeof(uint32_t) * noTriangles);
+	colors = new LeColor[noTriangles];
+	memset(colors, 0xFF, sizeof(LeColor) * noTriangles);
 	
 	this->noTriangles = noTriangles;
 	allocated = true;
@@ -164,8 +164,8 @@ void LeMesh::shadowCopy(LeMesh * copy) const
 		memcpy(copy->normals, normals, noTriangles * sizeof(LeVertex));
 	}
 	if (shades) {
-		copy->shades = new uint32_t[noTriangles];
-		memcpy(copy->shades, shades, noTriangles * sizeof(uint32_t));
+		copy->shades = new LeColor[noTriangles];
+		memcpy(copy->shades, shades, noTriangles * sizeof(LeColor));
 	}
 }
 
@@ -192,8 +192,8 @@ void LeMesh::copy(LeMesh * copy) const
 		memcpy(copy->normals, normals, noTriangles * sizeof(LeVertex));
 	}
 	if (shades) {
-		copy->shades = new uint32_t[noTriangles];
-		memcpy(copy->shades, shades, noTriangles * sizeof(uint32_t));
+		copy->shades = new LeColor[noTriangles];
+		memcpy(copy->shades, shades, noTriangles * sizeof(LeColor));
 	}
 }
 
@@ -271,7 +271,7 @@ void LeMesh::allocateNormals()
 void LeMesh::allocateShades()
 {
 	if (!shades){
-		shades = new uint32_t[noTriangles];
-		memset(shades, 0xFF, noTriangles * sizeof(uint32_t));
+		shades = new LeColor[noTriangles];
+		memset(shades, 0xFF, noTriangles * sizeof(LeColor));
 	}
 }

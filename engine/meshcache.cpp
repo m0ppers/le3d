@@ -142,6 +142,8 @@ void LeMeshCache::loadDirectory(const char * path)
 
 	}
 	closedir(dir);
+	uint8_t* c = (uint8_t*) &cacheSlots[0].mesh->colors;
+	printf("Le c: %d %d %d %d\n", c[0], c[1], c[2], c[3]);
 }
 
 /*****************************************************************************/

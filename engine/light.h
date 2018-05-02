@@ -9,7 +9,7 @@
 	\version 1.5
 
 	The MIT License (MIT)
-	Copyright (c) 2015-2018 Frédéric Meslin
+	Copyright (c) 2015-2018 Frï¿½dï¿½ric Meslin
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,7 @@
 #include "global.h"
 #include "config.h"
 
+#include "color.h"
 #include "geometry.h"
 #include "mesh.h"
 
@@ -59,14 +60,14 @@ class LeLight
 {
 public:
 	LeLight();
-	LeLight(LE_LIGHT_TYPES type, uint32_t color);
+	LeLight(LE_LIGHT_TYPES type, LeColor color);
 
 	static void black(LeMesh * mesh);
 	void shine(LeMesh * mesh);
 
 	LE_LIGHT_TYPES type;		/**< Model of the light */
 	LeAxis axis;				/**< Axis (source and direction) of the light */
-	uint32_t color;				/**< Diffuse color of the light */
+	LeColor color;				/**< Diffuse color of the light */
 	float rolloff;				/**< Roll off factor (point model) of the light */
 
 private:
@@ -75,7 +76,7 @@ private:
 	void shineAmbient(LeMesh * mesh);
 
 public:
-	static void blendColors(uint32_t color1, uint32_t color2, float factor, uint32_t &result);
+	static void blendColors(LeColor color1, LeColor color2, float factor, LeColor &result);
 
 };
 

@@ -9,7 +9,7 @@
 	\version 1.5
 
 	The MIT License (MIT)
-	Copyright (c) 2015-2018 Frédéric Meslin
+	Copyright (c) 2015-2018 Frï¿½dï¿½ric Meslin
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -43,6 +43,7 @@
 #include "global.h"
 #include "config.h"
 
+#include "color.h"
 #include "geometry.h"
 #include "mesh.h"
 #include "bset.h"
@@ -103,7 +104,7 @@ private:
 	int extra;							/**< Index of extra triangles */
 	int extraMax;						/**< Maximum number of extra triangles */
 
-	uint32_t * colors;					/**< Color table for triangles */
+	LeColor * colors;					/**< Color table for triangles */
 
 	LeVertex viewPosition;				/**< View position of renderer */
 	LeVertex viewAngle;					/**< View angle of renderer (in degrees) */

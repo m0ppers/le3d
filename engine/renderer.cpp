@@ -36,6 +36,7 @@
 #include "config.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <math.h>
 
@@ -76,6 +77,7 @@ LeRenderer::~LeRenderer()
 */
 void LeRenderer::render(const LeMesh * mesh)
 {
+	static bool doit = true; 
 // Check vertex memory space
 	if (!checkMemory(mesh->noVertexes, mesh->noTriangles))
 		return;
@@ -85,8 +87,14 @@ void LeRenderer::render(const LeMesh * mesh)
 	int * id1 = &usedTrilist->srcIndices[usedTrilist->noValid];
 	int * id2 = &usedTrilist->dstIndices[usedTrilist->noValid];
 
+
 	transform(mesh->view, mesh->vertexes, usedVerlist->vertexes, mesh->noVertexes);
 	int noTris = build(mesh, usedVerlist->vertexes, triRender, id1);
+	if (doit) {
+		uint8_t* c = (uint8_t*) mesh->shades;
+		printf("RENDER C: %d %d %d %d\n", c[0], c[1], c[2], c[3]);
+		doit = false;
+	}
 	extra = noTris;
 
 // Clip and project
@@ -364,6 +372,13 @@ int LeRenderer::build(const LeMesh * mesh, LeVertex vertexes[], LeTriangle tris[
 
 	if (mesh->shades) colors = mesh->shades;
 	else colors = mesh->colors;
+
+	static bool doit = true;
+	if (doit) {
+		uint8_t* c = (uint8_t*) &colors;
+		printf("BUILD COLORaaS: %p %p %d %d %d %d\n", mesh->shades, mesh->colors, c[0], c[1], c[2], c[3]);
+		doit = false;
+	}
 
 	for (int i = 0; i < mesh->noTriangles; i++) {
 		LeVertex * v1 = &vertexes[mesh->vertexList[i*3]];
