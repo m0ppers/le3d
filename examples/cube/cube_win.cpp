@@ -68,14 +68,14 @@ int main()
 		draw.setPixels(rasterizer.getPixels());
 
 	/** Update model transforms */
-		// crate->angle += LeVertex(0.1f, 2.0f, 0.0f);
+		crate->angle += LeVertex(0.1f, 2.0f, 0.0f);
 		crate->updateMatrix();
 
 	/** Light model */
 		LeLight::black(crate);
 		light1.shine(crate);
-		// light2.shine(crate);
-		// light3.shine(crate);
+		light2.shine(crate);
+		light3.shine(crate);
 
 	/** Render the 3D model */
 		renderer.render(crate);

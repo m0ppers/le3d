@@ -63,7 +63,7 @@ LeLight::LeLight(LE_LIGHT_TYPES type, LeColor color) :
 void LeLight::black(LeMesh * mesh)
 {
 	if (!mesh->shades) mesh->allocateShades();
-	memset(mesh->shades, 0xFF, sizeof(LeColor) * mesh->noTriangles);
+	memset(mesh->shades, 0, sizeof(LeColor) * mesh->noTriangles);
 }
 
 /**
@@ -144,11 +144,12 @@ void LeLight::blendColors(LeColor color1, LeColor color2, float factor, LeColor 
 	uint8_t * r	 = (uint8_t *) &result;
 	if (doit) {
 		printf("Aha before: %d %d %d\n", r[0], r[1], r[2]);
+	}
 	uint32_t f = (uint32_t) (factor * 65536.0f);
 	r[0] = cbound(r[0] + ((c1[0] * c2[0] * f) >> 24), 0, 255);
 	r[1] = cbound(r[1] + ((c1[1] * c2[1] * f) >> 24), 0, 255);
 	r[2] = cbound(r[2] + ((c1[2] * c2[2] * f) >> 24), 0, 255);
-
+	if (doit) {
 		printf("Aha hier: %d %d %d\n", r[0], r[1], r[2]);
 		doit = false;
 	}
