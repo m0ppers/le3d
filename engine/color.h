@@ -46,6 +46,37 @@ public:
         a = color.a;
         return *this;
     }
+
+#ifdef AMIGA
+	explicit LeColor(int const& color): r(color >> 24), g(color >> 16), b(color >> 8), a(color) {};
+	LeColor& operator=(int const& color) {
+		r = color >> 24;
+		g = color >> 16;
+		b = color >> 8;
+		a = color;
+
+		return *this;
+	}
+    operator int() {
+	    return (r << 24) | (g << 16) | (b << 8) | a;
+	}
+
+public:
+    static LeColor rgba(uint32_t const& rgba) {
+		return LeColor(rgba >> 24, rgba >> 16, rgba >> 8, rgba);
+    }
+    
+	static LeColor rgb(uint32_t const& rgb) {
+		return LeColor(rgb >> 16, rgb >> 8, rgb, 1);
+    }
+
+public:
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+    uint8_t a;
+
+#else
 	explicit LeColor(int const& color): r(color >> 16), g(color >> 8), b(color), a(color >> 24) {};
 	LeColor& operator=(int const& color) {
 		r = color >> 16;
@@ -73,6 +104,7 @@ public:
     uint8_t g;
     uint8_t r;
     uint8_t a;
+#endif
 };
 
 

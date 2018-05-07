@@ -66,13 +66,7 @@
 	#define LE_VERLIST_MAX				(3 * LE_TRILIST_MAX)	/** Maximum number of vertexes in transformation buffer */
 
 /** Performance optimizations */
-	#define LE_USE_SIMD					1						/** Use SIMD instructions & vectors */
+	#define LE_USE_SIMD					0						/** Use SIMD instructions & vectors */
 	#define LE_USE_SSE2					1						/** Use Intel SSE2 instructions */
-
-#ifdef AMIGA
-	#define LE_PIXFMT_ARGB
-#else
-	#define LE_PIXFMT_BGRA
-#endif
 
 #endif // LE_CONFIG_H

@@ -36,9 +36,10 @@
 #include "config.h"
 #include <stdio.h>
 
-#include "simd.h"
 #ifdef AMMX
 #include "ammx/ammx.h"
+#elif LE_USE_SIMD
+#include "simd.h"
 #endif
 
 /*****************************************************************************/
