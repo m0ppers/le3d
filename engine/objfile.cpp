@@ -6,10 +6,10 @@
 	\twitter @marzacdev
 	\website http://fredslab.net
 	\copyright Frederic Meslin 2015 - 2018
-	\version 1.5
+	\version 1.6
 
 	The MIT License (MIT)
-	Copyright (c) 2015-2018 Fr�d�ric Meslin
+	Copyright (c) 2015-2018 Frédéric Meslin
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -484,7 +484,6 @@ void LeObjFile::importTriangles(FILE * file, LeMesh * mesh)
 	mesh->colors = new LeColor[nb];
 	memset(mesh->colors, 0, nb * sizeof(LeColor));
 	mesh->noTriangles = nb;
-	static bool doit = true;
 // Import the triangles
 	int start = ftell(file);
 	int len = readLine(file, line, LE_OBJ_MAX_LINE);

@@ -8,10 +8,10 @@
 	\twitter @marzacdev
 	\website http://fredslab.net
 	\copyright Frederic Meslin 2015 - 2018
-	\version 1.5
+	\version 1.6
 
 	The MIT License (MIT)
-	Copyright (c) 2017-2018 Fr�d�ric Meslin
+	Copyright (c) 2017-2018 Frédéric Meslin
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -62,7 +62,7 @@ public:
 	void flush();
 
 	LeBitmap frame;				/**< Frame buffer */ 
-	uint32_t background;		/**< Background color */ 
+	LeColor background;		/**< Background color */ 
 	
 private:
 	void topTriangleZC(int vt, int vm1, int vm2);

@@ -6,10 +6,10 @@
 	\twitter @marzacdev
 	\website http://fredslab.net
 	\copyright Frederic Meslin 2015 - 2018
-	\version 1.5
+	\version 1.6
 
 	The MIT License (MIT)
-	Copyright (c) 2015-2018 Fr�d�ric Meslin
+	Copyright (c) 2015-2018 Frédéric Meslin
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -579,7 +579,7 @@ void LeBitmap::makeMipmaps()
 				int g = (s[1] + s[1+4] + s[1+mtx*2*4] + s[1+4+mtx*2*4]) >> 2;
 				int b = (s[2] + s[2+4] + s[2+mtx*2*4] + s[2+4+mtx*2*4]) >> 2;
 				int a = (s[3] + s[3+4] + s[3+mtx*2*4] + s[3+4+mtx*2*4]) >> 2;
-				* p++ = (a << 24) | (b << 16) | (g << 8) | r;
+				* p++ = LeColor(r, g, b, a);
 				o += 2;
 			}
 			o += mtx * 2;

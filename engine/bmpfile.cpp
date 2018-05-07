@@ -6,7 +6,7 @@
 	\twitter @marzacdev
 	\website http://fredslab.net
 	\copyright Frederic Meslin 2015 - 2018
-	\version 1.5
+	\version 1.6
 
 	The MIT License (MIT)
 	Copyright (c) 2015-2018 Frédéric Meslin
@@ -313,11 +313,6 @@ int LeBmpFile::readBitmap(FILE * file, LeBitmap * bitmap)
 				d->b = * s++;
 				d->g = * s++;
 				d->r = * s++;
-
-				if (doit) {
-					printf("RGB: %d %d %d\n", d->r, d->g, d->b);
-					doit = false;
-				}
 				d++;
 			}
 			if (upsidedown) data -= dstScan;

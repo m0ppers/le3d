@@ -8,7 +8,7 @@
 	\twitter @marzacdev
 	\website http://fredslab.net
 	\copyright Frederic Meslin 2015 - 2018
-	\version 1.5
+	\version 1.6
 
 	The MIT License (MIT)
 	Copyright (c) 2015-2018 Frédéric Meslin
@@ -61,8 +61,8 @@ AMIGA_PROFILING_PRELUDE
 /*****************************************************************************/
 LeRasterizer::LeRasterizer(int width, int height) :
 	frame(),
-	background(0),
-	color(0xFFFFFF00),
+	background(LeColor()),
+	color(LeColor::rgb(0xFFFFFF)),
 	bmp(NULL),
 	texPixels(NULL),
 	texSizeU(0), texSizeV(0),
@@ -75,7 +75,6 @@ LeRasterizer::LeRasterizer(int width, int height) :
 	memset(vs, 0, sizeof(int32_t) * 4);
 
 	frame.allocate(width, height + 2);
-	frame.clear(0);
 
 	// printf("PREKALK!\n");
 	// // BRUUUUUUUUUUUUUTE FORCE :D
@@ -87,6 +86,8 @@ LeRasterizer::LeRasterizer(int width, int height) :
 	// 	cache[-i] = (1 << (24 + 4)) / i;
 	// }
 	// printf("PREKALK done %d %x %x %x %x!\n", i, INT_MIN, INT_MIN >> 8, -(INT_MIN >> 8), -(-1));
+	frame.clear(LeColor());
+
 	pixels = ((LeColor *) frame.data) + frame.tx;
 }
 
@@ -369,7 +370,7 @@ inline void LeRasterizer::fillFlatTexZC(int y, int x1, int x2, int w1, int w2, i
 	int au = (u2 - u1) / d;
 	int av = (v2 - v1) / d;
 	int aw = (w2 - w1) / d;
-	uint32_t * p = x1 + y * frame.tx + pixels;
+	LeColor * p = x1 + y * frame.tx + pixels;
 
 	for (int x = x1; x <= x2; x ++) {
 		int32_t z = (1 << (24 + 4)) / (w1 >> (12 - 4));
@@ -400,7 +401,7 @@ inline void LeRasterizer::fillFlatTexAlphaZC(int y, int x1, int x2, int w1, int 
 	int av = (v2 - v1) / d;
 	int aw = (w2 - w1) / d;
 
-	uint32_t * p = x1 + y * frame.tx + pixels;
+	LeColor * p = x1 + y * frame.tx + pixels;
 
 	__m128i sc = _mm_set1_epi32(0x01000100);
 	for (int x = x1; x <= x2; x ++) {
@@ -469,12 +470,13 @@ inline void LeRasterizer::fillFlatTexAlphaZC(int y, int x1, int x2, int w1, int 
 {
 	uint8_t * c = (uint8_t *) &color;
 
-	int d = x2 - x1;
+	short d = x2 - x1;
 	if (d == 0) return;
 
 	int au = (u2 - u1) / d;
 	int av = (v2 - v1) / d;
 	int aw = (w2 - w1) / d;
+	
 
 	uint8_t * p = (uint8_t *) (x1 + y * frame.tx + (uint32_t *) frame.data);
 
