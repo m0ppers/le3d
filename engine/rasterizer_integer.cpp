@@ -445,7 +445,7 @@ inline void LeRasterizer::fillFlatTexZC(int y, int x1, int x2, int w1, int w2, i
 	int aw = (w2 - w1) / d;
 
 	uint8_t * p = (uint8_t *) (x1 + y * frame.tx + (uint32_t *) frame.data);
-	int hmm = fill_flat_texel(p, d, u1, v1, w1, au, av, aw, texMaskU, texMaskV, texSizeU, texPixels, c);
+	int hmm = fill_flat_texel(p, d, u1, v1, w1, au, av, aw, texMaskU, texMaskV, texSizeU, (uint32_t *) texPixels, c);
 
 	// printf("HMMM %d %d %d\n", u1, v1, w1);
 	// for (int x = x1; x <= x2; x++) {

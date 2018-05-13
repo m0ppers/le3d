@@ -15,17 +15,17 @@
 #include <stdio.h>
 
 /*****************************************************************************/
-const int resoX = 640;
-const int resoY = 360;
+const int resoX = 320;
+const int resoY = 180;
 
 /*****************************************************************************/
 int main()
 {
 /** Create application objects */
-	LeWindow	 window		= LeWindow("Le3d: amiga");
-	LeDraw		 draw		= LeDraw(window.getContext());
-	LeRenderer	 renderer	= LeRenderer();
-	LeRasterizer rasterizer = LeRasterizer();
+	LeWindow	 window		= LeWindow("Le3d: amiga", resoX, resoY);
+	LeDraw		 draw		= LeDraw(window.getContext(), resoX, resoY);
+	LeRenderer	 renderer	= LeRenderer(resoX, resoY);
+	LeRasterizer rasterizer = LeRasterizer(resoX, resoY);
 
     // std::cout << "Setup done!" << std::endl;
 
