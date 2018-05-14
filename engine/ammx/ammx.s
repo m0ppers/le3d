@@ -50,18 +50,17 @@ _fill_flat_texel:
     bra .loopend
 .loopstart
     ; calculate z
-    ;move.l #$10000000,d1
     move.l d7,d2
     asr.l #8,d2
+    ; don't really get the calculation here (until z is in d1). copy paste from gcc assembler output :D
+    ; using original division here: 18fps, prekalk: 22fps
     move.l d2,d1
     add.l d1,d1
     sub.l d1,d2
     lsl.l #2,d2
-    ;neg.l d2
-    ;divs.l d2,d1    ; z in d1
     move.l 84(a7),a2
     add.l d2,a2
-    move.l (a2),d1
+    move.l (a2),d1   ; z in d1
     move.b #24,d4   ; needed for shift right
     ; calculate tu
     move.l d5,d2
