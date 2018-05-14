@@ -57,6 +57,8 @@
 
 struct Library *CyberGfxBase = NULL;
 
+static unsigned short Pointer[] = {0,0,0,0,0,0,0,0,0,0,0,0};
+
 LeWindow::LeWindow(const char * name, int width, int height) :
 	handle(0),
 	width(width),
@@ -111,6 +113,7 @@ LeWindow::LeWindow(const char * name, int width, int height) :
     };
 
 	auto window = OpenWindowTagList(NULL, win_tags);
+	SetPointer(window, (unsigned short *) Pointer, 2, 16, 0, 0);
 	dc.display = (LeHandle) screen;
 	dc.window = (LeHandle) window;
 	dc.gc = (LeHandle) window->RPort;
