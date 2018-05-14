@@ -41,6 +41,7 @@
 #include "draw.h"
 #include "bmpcache.h"
 
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -76,16 +77,16 @@ LeRasterizer::LeRasterizer(int width, int height) :
 
 	frame.allocate(width, height + 2);
 
-	// printf("PREKALK!\n");
-	// // BRUUUUUUUUUUUUUTE FORCE :D
-	// cache = (int*) malloc((1 << 24) * sizeof(4));
-	// // int32_t z = (1 << (24 + 4)) / (w1 >> (12 - 4));
-	// int i;
+	printf("PREKALK!\n");
+	// BRUUUUUUUUUUUUUTE FORCE :D
+	cache = (int*) malloc((1 << 24) * sizeof(4));
+	// int32_t z = (1 << (24 + 4)) / (w1 >> (12 - 4));
+	int i;
 
-	// for (i=INT_MIN >> 8;i<0;i++) {
-	// 	cache[-i] = (1 << (24 + 4)) / i;
-	// }
-	// printf("PREKALK done %d %x %x %x %x!\n", i, INT_MIN, INT_MIN >> 8, -(INT_MIN >> 8), -(-1));
+	for (i=INT_MIN >> 8;i<0;i++) {
+		cache[-i] = (1 << (24 + 4)) / i;
+	}
+	printf("PREKALK done %d %x %x %x %x!\n", i, INT_MIN, INT_MIN >> 8, -(INT_MIN >> 8), -(-1));
 	frame.clear(LeColor());
 
 	pixels = ((LeColor *) frame.data) + frame.tx;
@@ -445,7 +446,7 @@ inline void LeRasterizer::fillFlatTexZC(int y, int x1, int x2, int w1, int w2, i
 	int aw = (w2 - w1) / d;
 
 	uint8_t * p = (uint8_t *) (x1 + y * frame.tx + (uint32_t *) frame.data);
-	int hmm = fill_flat_texel(p, d, u1, v1, w1, au, av, aw, texMaskU, texMaskV, texSizeU, (uint32_t *) texPixels, c);
+	int hmm = fill_flat_texel(p, d, u1, v1, w1, au, av, aw, texMaskU, texMaskV, texSizeU, (uint32_t *) texPixels, c, cache);
 
 	// printf("HMMM %d %d %d\n", u1, v1, w1);
 	// for (int x = x1; x <= x2; x++) {
@@ -517,24 +518,24 @@ inline void LeRasterizer::fillFlatTexZC(int y, int x1, int x2, int w1, int w2, i
 	int aw = (w2 - w1) / d;
 	
 
-	uint8_t * p = (uint8_t *) (x1 + y * frame.tx + pixels);
+	LeColor* p = (LeColor *) (x1 + y * frame.tx + pixels);
 	for (int x = x1; x <= x2; x++) {
 		int32_t z = (1 << (24 + 4)) / (w1 >> (12 - 4));
 		uint32_t tu = (((int64_t) u1 * z) >> 24) & texMaskU;
 		uint32_t tv = (((int64_t) v1 * z) >> 24) & texMaskV;
-		uint8_t * t = (uint8_t *) &texPixels[tu + (tv << texSizeU)];
+		LeColor t = texPixels[tu + (tv << texSizeU)];
 		// p[0] = t[0];//(t[0] * c[0]) >> 8;
 		// p[1] = t[1];//(t[1] * c[1]) >> 8;
 		// p[2] = t[2];//(t[2] * c[2]) >> 8;
-		p[0] = (t[0] * c[0]) >> 8;
-		p[1] = (t[1] * c[1]) >> 8;
-		p[2] = (t[2] * c[2]) >> 8;
+		p->r = (t.r * color.r) >> 8;
+		p->g = (t.g * color.g) >> 8;
+		p->b = (t.b * color.b) >> 8;
 	if (!has) {
-		printf("DINGS: %u %u %u %u %u %u %u %u %u\n", c[0], c[1], c[2], t[0], t[1], t[2], p[0], p[1], p[2]);
+		// printf("DINGS: %u %u %u %u %u %u %u %u %u\n", c[0], c[1], c[2], t[0], t[1], t[2], p[0], p[1], p[2]);
 		has =true;
 	}
 
-		p += 4;
+		p++;
 
 		u1 += au;
 		v1 += av;

@@ -15,12 +15,16 @@
 #include <stdio.h>
 
 /*****************************************************************************/
-const int resoX = 320;
-const int resoY = 180;
+const int resoX = 480;
+const int resoY = 270;
 
 /*****************************************************************************/
 int main()
 {
+/** Load the assets (textures then 3D models) */
+	bmpCache.loadDirectory("assets");
+	meshCache.loadDirectory("assets");
+	
 /** Create application objects */
 	LeWindow	 window		= LeWindow("Le3d: amiga", resoX, resoY);
 	LeDraw		 draw		= LeDraw(window.getContext(), resoX, resoY);
@@ -29,9 +33,6 @@ int main()
 
     // std::cout << "Setup done!" << std::endl;
 
-/** Load the assets (textures then 3D models) */
-	bmpCache.loadDirectory("assets");
-	meshCache.loadDirectory("assets");
 
 // /** Retrieve the 3D model */
 	int crateSlot = meshCache.getFromName("crate.obj");
@@ -53,7 +54,15 @@ int main()
 /** Initialize the timing */
 	timing.setup(60);
 	timing.firstFrame();
-
+	
+	LeBitmap off1;
+	off1.allocate(resoX, resoY + 2);
+	LeBitmap off2;
+	off2.allocate(resoX, resoY + 2);
+	
+	LeBitmap* fb1 = &rasterizer.frame;
+	LeBitmap* fb2 = &off1;
+	LeBitmap* fb3 = &off2;
 /** Program main loop */
 	int frameCounter = 0;
 	while (window.update()) {
@@ -66,7 +75,11 @@ int main()
 	/** Wait for next frame */
 		timing.waitNextFrame();
 	// /** Copy render frame to window context */
-		draw.setPixels(rasterizer.frame.data);
+		draw.setPixels(fb1->data);
+		void* tmp = fb1->data;
+		fb1->data = fb2->data;
+		fb2->data = fb3->data;
+		fb3->data = tmp;
 
 	/** Update model transforms */
 		crate->angle += LeVertex(0.1f, 2.0f, 0.0f);

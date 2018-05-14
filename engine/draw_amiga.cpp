@@ -41,9 +41,9 @@
 #include <cybergraphx/cybergraphics.h>
 #include <proto/cybergraphics.h>
 #include <proto/intuition.h>
-#include <proto/exec.h>
 
-struct Library *CyberGfxBase = NULL;
+
+#define SAGA_VIDEO_PLANEPTR 0xDFF1EC
 
 /*****************************************************************************/
 LeDraw::LeDraw(LeDrawingContext context, int width, int height) :
@@ -51,24 +51,12 @@ LeDraw::LeDraw(LeDrawingContext context, int width, int height) :
 	frontContext(context),
 	bitmap(0)
 {
-	CyberGfxBase = OpenLibrary("cybergraphics.library", 41);
-	if (!CyberGfxBase) {
-	    printf("ERROR: can`t open cybergraphics.library V41.\n");	
-	}
-	// Visual * visual = DefaultVisual((Display *) context.display, 0);
-	// if (visual->c_class != TrueColor) {
-	// 	printf("Draw: can only draw on truecolor displays!\n");
-	// 	return;
-	// }
-	// bitmap = (LeHandle) XCreateImage((Display *) context.display, visual, 24, ZPixmap, 0, (char *) NULL, width, height, 32, 0);
 }
 
 LeDraw::~LeDraw()
 {
 	// if (bitmap) XDestroyImage((XImage *) bitmap);
-	if (CyberGfxBase) {
-		CloseLibrary(CyberGfxBase);
-	}
+
 }
 
 /*****************************************************************************/
@@ -79,6 +67,5 @@ LeDraw::~LeDraw()
 */
 void LeDraw::setPixels(const void * data)
 {
-	auto window = (Window*) frontContext.window;
-	WritePixelArray((APTR) data, 0, 0, 4 * width, window->RPort, window->BorderLeft, window->BorderTop, width, height, RECTFMT_RGBA);
+	*(volatile ULONG *) SAGA_VIDEO_PLANEPTR = (ULONG) data;
 }

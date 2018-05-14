@@ -34,6 +34,8 @@
 #ifndef AMMX_H
 #define AMMX_H
 
+#include "engine/color.h"
+
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -42,7 +44,8 @@ extern "C" {
 
 int fill_flat_texel(
     uint8_t* p, short d, int u1, int v1, int w1, int au, int av, int aw,
-    uint32_t texMaskU, uint32_t texMaskV, uint32_t texSizeU, uint32_t* texPixels, uint8_t* c
+    uint32_t texMaskU, uint32_t texMaskV, uint32_t texSizeU, uint32_t* texPixels,
+	uint8_t* c, int* divCache
 );
 void set_ammx_pixels(void* data, size_t bytes, LeColor color);
 

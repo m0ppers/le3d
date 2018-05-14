@@ -87,7 +87,7 @@ target_link_libraries(
 
 if(AMIGA)
     if (LE3D_AMMX)
-        target_compile_options(le3d PRIVATE -DAMMX=1)
+        target_compile_options(le3d PUBLIC -DAMMX=1)
     endif()
 else()
     if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

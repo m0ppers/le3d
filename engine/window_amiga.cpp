@@ -39,11 +39,14 @@
 #include <cybergraphx/cybergraphics.h>
 #include <proto/cybergraphics.h>
 #include <proto/dos.h>
+#include <proto/exec.h>
 #include <proto/intuition.h>
 #include <proto/gadtools.h>
 
 #include <string.h>
 #include <stdio.h>
+
+#define ESC_KEY 0x45
 
 /*****************************************************************************/
 // static Display * usedXDisplay = NULL;
@@ -51,6 +54,9 @@
 // static const int xEventMask = KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | ButtonMotionMask | PointerMotionMask;
 
 /*****************************************************************************/
+
+struct Library *CyberGfxBase = NULL;
+
 LeWindow::LeWindow(const char * name, int width, int height) :
 	handle(0),
 	width(width),
@@ -59,22 +65,53 @@ LeWindow::LeWindow(const char * name, int width, int height) :
 	keyCallback(NULL),
 	mouseCallback(NULL)
 {
+	CyberGfxBase = OpenLibrary("cybergraphics.library", 41);
+	if (!CyberGfxBase) {
+	    printf("ERROR: can`t open cybergraphics.library V41.\n");	
+	}
 	memset(&dc, 0, sizeof(LeDrawingContext));
 
+	ULONG display_id = BestCModeIDTags(CYBRBIDTG_NominalWidth, width, CYBRBIDTG_NominalHeight, height, CYBRBIDTG_Depth, 32,TAG_DONE);
+
+	if (display_id == INVALID_ID) {
+		printf("Couldn't find display!\n");
+		return;
+	}
+
+	struct TagItem screen_tags[] = {
+		{SA_Left, 0},
+		{SA_Top, 0},
+		{SA_Width, (ULONG) width},
+		{SA_Height, (ULONG) height},
+		{SA_Depth, 32},
+		{SA_DisplayID, display_id},
+		{SA_ShowTitle, 0},
+		{SA_Type, SCREENQUIET|CUSTOMSCREEN },
+		{TAG_END, 0},
+	};
+
+	Screen* screen = OpenScreenTagList(NULL, screen_tags);
+
 	struct TagItem win_tags[] = {
-        {WA_Left,       200},
-        {WA_Top,        40},
-        {WA_InnerWidth,      (ULONG) width},
-        {WA_InnerHeight,     (ULONG) height},
-        {WA_CloseGadget,true},
-		{WA_AutoAdjust, true},
-		{WA_Title,		(ULONG) name},
-        {WA_IDCMP,      IDCMP_CLOSEWINDOW},
+		{WA_CustomScreen, (ULONG) screen},
+		{WA_Backdrop, 1},
+		{WA_Borderless, 1},
+		{WA_Activate, 1},
+		{WA_SizeGadget, 0},
+		{WA_DepthGadget, 0},
+		{WA_CloseGadget, 0},
+		{WA_DragBar, 0},
+        // {WA_InnerWidth,      (ULONG) width},
+        // {WA_InnerHeight,     (ULONG) height},
+        // {WA_CloseGadget,true},
+		// {WA_AutoAdjust, true},
+		// {WA_Title,		(ULONG) name},
+        {WA_IDCMP,      IDCMP_CLOSEWINDOW | IDCMP_RAWKEY},
         {TAG_END, 0},
     };
 
 	auto window = OpenWindowTagList(NULL, win_tags);
-	dc.display = (LeHandle) window->WScreen;
+	dc.display = (LeHandle) screen;
 	dc.window = (LeHandle) window;
 	dc.gc = (LeHandle) window->RPort;
 
@@ -87,6 +124,10 @@ LeWindow::~LeWindow()
 		return;
 	}
 	CloseWindow((Window*) handle);
+	CloseScreen((Screen*) dc.display);
+	if (CyberGfxBase) {
+		CloseLibrary(CyberGfxBase);
+	}
 }
 
 /*****************************************************************************/
@@ -109,6 +150,10 @@ bool LeWindow::update()
 
 		if (cls == IDCMP_CLOSEWINDOW) {
 			return false;
+		} else if (cls == IDCMP_RAWKEY) {
+			if (msg->Code == ESC_KEY) {
+				return false;
+			}
 		}
 	}
 	return true;

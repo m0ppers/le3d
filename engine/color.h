@@ -45,7 +45,37 @@ public:
         return *this;
     }
 
-#ifdef AMIGA
+#ifdef AMMX
+    LeColor(): a(0), r(0), g(0), b(0) {}
+	LeColor(uint8_t const& _r, uint8_t const& _g, uint8_t const& _b, uint8_t const& _a): a(_a), r(_r), g(_g), b(_b) {} 
+	explicit LeColor(int const& color): a(color >> 24), r(color >> 16), g(color >> 8), b(color) {};
+	LeColor& operator=(int const& color) {
+		a = color >> 24;
+		r = color >> 16;
+		g = color >> 8;
+		b = color;
+
+		return *this;
+	}
+    operator int() {
+	    return (a << 24) | (r << 16) | (g << 8) | b;
+	}
+
+public:
+    static LeColor rgba(uint32_t const& rgba) {
+		return LeColor(rgba >> 16, rgba >> 8, rgba, rgba >> 24);
+    }
+    
+	static LeColor rgb(uint32_t const& rgb) {
+		return LeColor(rgb >> 16, rgb >> 8, rgb, 0xff);
+    }
+
+public:
+    uint8_t a;
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+#elif AMIGA
     LeColor(): r(0), g(0), b(0), a(0) {}
 	LeColor(uint8_t const& _r, uint8_t const& _g, uint8_t const& _b, uint8_t const& _a): r(_r), g(_g), b(_b), a(_a) {} 
 	explicit LeColor(int const& color): r(color >> 24), g(color >> 16), b(color >> 8), a(color) {};
@@ -67,7 +97,7 @@ public:
     }
     
 	static LeColor rgb(uint32_t const& rgb) {
-		return LeColor(rgb >> 16, rgb >> 8, rgb, 1);
+		return LeColor(rgb >> 16, rgb >> 8, rgb, 0xff);
     }
 
 public:
@@ -75,7 +105,6 @@ public:
     uint8_t g;
     uint8_t b;
     uint8_t a;
-
 #else
     LeColor(): b(0), g(0), r(0), a(0) {}
 	LeColor(uint8_t const& _r, uint8_t const& _g, uint8_t const& _b, uint8_t const& _a): b(_b), g(_g), r(_r), a(_a) {} 
@@ -98,7 +127,7 @@ public:
     }
     
 	static LeColor rgb(uint32_t const& rgb) {
-		return LeColor(rgb >> 16, rgb >> 8, rgb, 1);
+		return LeColor(rgb >> 16, rgb >> 8, rgb, 0xff);
     }
 
 public:

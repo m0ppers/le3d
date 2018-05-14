@@ -10,6 +10,10 @@ SET(CMAKE_C_FLAGS "-c99 -cpu=68080 -lmieee" CACHE STRING "" FORCE)
 SET(CMAKE_C_FLAGS_RELEASE "-O3" CACHE STRING "" FORCE)
 SET(CMAKE_CXX_FLAGS "-noixemul -m68040" CACHE STRING "" FORCE)
 
+# newest toolchain works for le3d but the cmake compiler check
+# doesn't work due to linker errors :S
+set(CMAKE_C_COMPILER_WORKS 1)
+set(CMAKE_CXX_COMPILER_WORKS 1)
 SET(UNIX false)
 SET(AMIGA true)
 
