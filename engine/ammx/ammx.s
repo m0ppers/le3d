@@ -1,3 +1,4 @@
+    xdef _prepare_fill_texel
     xdef _fill_flat_texel
     xdef _set_ammx_pixels
 
@@ -15,6 +16,13 @@ _set_ammx_pixels:
     bgt    .loop
     rts
 
+; 4(a7) LeColor* c
+_prepare_fill_texel:
+    load #3,e4
+    move.l 4(a7),a0
+    load (a0),e0
+    vperm #$48494a4b,e4,e0,e1   ; c in e1
+    rts
 
 ; 
 ; 4(a7) uint8_t* p
@@ -40,11 +48,6 @@ _fill_flat_texel:
     move.l 40(a7),d5    ; u1 in d5
     move.l 44(a7),d6    ; v1 in d6
     move.l 48(a7),d7    ; w1 in d7
-    load #3,e4
-    move.l 80(a7),a0
-    load (a0),e0
-    vperm #$48494a4b,e4,e0,e1   ; c in e1
-    ;move.l 84(a7),a2
     bclr.l  #$09,d4     ; indicator if we should store our calculated result => start with 0
     move.l 36(a7),d0    ; d0 is our loopvar
     bra .loopend

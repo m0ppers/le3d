@@ -134,13 +134,8 @@ void LeRasterizer::rasterList(LeTriList * trilist)
 		else bmp = slot->bitmap;
 		
 		color = tri->color;
-		if (doit) {
-			uint8_t * c = (uint8_t *) &color;
-			printf("COLOR: %d %d %d %d\n", c[0], c[1], c[2], c[3]);
-			doit = false;
-		}
-
-		AMIGA_PROFILING_STOP("material");
+		prepare_fill_texel(&color);
+		AMIGA_PROFILING_STOP("material1");
 
 
 
@@ -249,7 +244,7 @@ void LeRasterizer::rasterList(LeTriList * trilist)
 		AMIGA_PROFILING_START;
 		int dx = xs[vm2] - xs[vm1];
 		if (dx < 0) {int t = vm1; vm1 = vm2; vm2 = t;}
-		AMIGA_PROFILING_STOP("material");
+		AMIGA_PROFILING_STOP("material2");
 
 	// Render the triangle
 		AMIGA_PROFILING_START;
@@ -269,7 +264,7 @@ void LeRasterizer::topTriangleZC(int vt, int vm1, int vm2)
 {
 	int d = ys[vm1] - ys[vt];
 	if (d == 0) return;
-
+	AMIGA_PROFILING_START
 	int	ax1 = (xs[vm1] - xs[vt]) / d;
 	int	aw1 = (ws[vm1] - ws[vt]) / d;
 	int au1 = (us[vm1] - us[vt]) / d;
@@ -279,6 +274,7 @@ void LeRasterizer::topTriangleZC(int vt, int vm1, int vm2)
 	int	aw2 = (ws[vm2] - ws[vt]) / d;
 	int au2 = (us[vm2] - us[vt]) / d;
 	int av2 = (vs[vm2] - vs[vt]) / d;
+	AMIGA_PROFILING_STOP("divisions");
 
 	int x1 = xs[vt];
 	int x2 = x1;
@@ -446,7 +442,7 @@ inline void LeRasterizer::fillFlatTexZC(int y, int x1, int x2, int w1, int w2, i
 	int aw = (w2 - w1) / d;
 
 	uint8_t * p = (uint8_t *) (x1 + y * frame.tx + (uint32_t *) frame.data);
-	int hmm = fill_flat_texel(p, d, u1, v1, w1, au, av, aw, texMaskU, texMaskV, texSizeU, (uint32_t *) texPixels, c, cache);
+	fill_flat_texel(p, d, u1, v1, w1, au, av, aw, texMaskU, texMaskV, texSizeU, (uint32_t *) texPixels, c, cache);
 
 	// printf("HMMM %d %d %d\n", u1, v1, w1);
 	// for (int x = x1; x <= x2; x++) {
@@ -500,7 +496,6 @@ inline void LeRasterizer::fillFlatTexAlphaZC(int y, int x1, int x2, int w1, int 
 	}
 }
 #else
-static bool has = false;
 inline void LeRasterizer::fillFlatTexZC(int y, int x1, int x2, int w1, int w2, int u1, int u2, int v1, int v2)
 {
 	uint8_t * c = (uint8_t *) &color;
@@ -530,11 +525,6 @@ inline void LeRasterizer::fillFlatTexZC(int y, int x1, int x2, int w1, int w2, i
 		p->r = (t.r * color.r) >> 8;
 		p->g = (t.g * color.g) >> 8;
 		p->b = (t.b * color.b) >> 8;
-	if (!has) {
-		// printf("DINGS: %u %u %u %u %u %u %u %u %u\n", c[0], c[1], c[2], t[0], t[1], t[2], p[0], p[1], p[2]);
-		has =true;
-	}
-
 		p++;
 
 		u1 += au;
