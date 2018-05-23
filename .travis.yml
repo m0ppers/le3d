@@ -14,7 +14,7 @@ matrix:
     - os: osx
       osx_image: xcode8
       env:
-        - MATRIX_EVAL="brew install gcc5 && CC=gcc-5 && CXX=g++-5"
+        - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
     # works on Trusty
     - os: linux
       addons:
@@ -28,6 +28,10 @@ matrix:
     # clang is default on osx
     - os: osx
       osx_image: xcode8
+        - MATRIX_EVAL="CC=clang && CXX=clang++"
+
+before_script:
+    - eval "${MATRIX_EVAL}"
 
 script:
   - mkdir build
