@@ -38,9 +38,9 @@ matrix:
     # AMIGAAAAAA
     - os: linux
       before_script:
-        - docker build -t le3d-build -f support/Dockerfile.amiga
-        - docker run le3d-build -p .:/le3d /bin/sh -c "cd /le3d; support/build.sh"
-
+        - docker build -t le3d-build -f support/Dockerfile.amiga support
+      script:
+        - docker run le3d-build -p .:/le3d /le3d/support/build-amiga.sh
 
 before_script:
     - eval "${MATRIX_EVAL}"
