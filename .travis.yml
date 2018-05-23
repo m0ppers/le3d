@@ -40,7 +40,7 @@ matrix:
       before_script:
         - docker build -t le3d-build -f support/Dockerfile.amiga support
       script:
-        - docker run le3d-build -v .:/le3d /le3d/support/build-amiga.sh
+        - docker run -v .:/le3d le3d-build /le3d/support/build-amiga.sh
 
 before_script:
     - eval "${MATRIX_EVAL}"
