@@ -1,3 +1,8 @@
+sudo: required
+
+services:
+  - docker
+
 language: cpp
 matrix:
   include:
@@ -30,12 +35,14 @@ matrix:
       osx_image: xcode8
       env:
         - MATRIX_EVAL="CC=clang && CXX=clang++"
+    # AMIGAAAAAA
+    - os: linux
+      before_script:
+        - docker build -t le3d-build -f support/Dockerfile.amiga
+        - docker run le3d-build -p .:/le3d /bin/sh -c "cd /le3d; support/build.sh"
+
 
 before_script:
     - eval "${MATRIX_EVAL}"
 
-script:
-  - mkdir build
-  - cd build
-  - cmake ..
-  - make
+script: support/build.sh
