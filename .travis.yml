@@ -28,6 +28,7 @@ matrix:
     # clang is default on osx
     - os: osx
       osx_image: xcode8
+      env:
         - MATRIX_EVAL="CC=clang && CXX=clang++"
 
 before_script:
