@@ -1,0 +1,6 @@
+image: Visual Studio 2017
+
+build_script:
+  - mkdir build
+  - cmake ..
+  - cmake --build .
