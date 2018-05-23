@@ -7,7 +7,7 @@ os:
   - osx
 
 script:
-  mkdir build
-  cd build
-  cmake ..
-  make -j4
+  - mkdir build
+  - cd build
+  - cmake ..
+  - make -j4
