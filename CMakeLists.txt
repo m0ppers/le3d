@@ -31,6 +31,7 @@ bool2int(LE3D_USE_SIMD)
 bool2int(LE3D_USE_SSE2)
 bool2int(LE3D_USE_AMMX)
 bool2int(LE3D_USE_SAGA_FB)
+bool2int(LE3D_USE_VBLANK_FRAME_WAIT)
 
 configure_file(engine/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 

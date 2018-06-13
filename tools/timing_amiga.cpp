@@ -33,10 +33,18 @@
 /*****************************************************************************/
 #if defined(AMIGA)
 
+#include "config.h"
+
 #include "timing.h"
 
 #include <stdio.h>
 
+#if LE_USE_VBLANK_FRAME_WAIT == 1
+#include <exec/interrupts.h>
+#include <exec/memory.h>
+#include <exec/types.h>
+#endif
+#include <hardware/intbits.h>
 #include <proto/exec.h>
 #include <proto/timer.h>
 
@@ -48,6 +56,17 @@ struct MsgPort *port = NULL;
 struct EClockVal ecval;
 struct Device* TimerBase = NULL;
 
+#if LE_USE_VBLANK_FRAME_WAIT == 1
+struct Interrupt *vbint;
+static volatile ULONG frameCounter = 0;
+
+// LOL different ABI?!??! a1 has the dataptr (wtf?)
+// luckily we can access the static variable :S
+void VertBServer() {
+	frameCounter++;
+}
+#endif
+
 /*****************************************************************************/
 LeTiming::LeTiming() :
 	fps(0.0f),
@@ -55,6 +74,21 @@ LeTiming::LeTiming() :
 	countsPerSec(0), countsPerFrame(0),
 	lastCounter(0)
 {
+#if LE_USE_VBLANK_FRAME_WAIT == 1
+	vbint = (struct Interrupt*) AllocMem(sizeof(struct Interrupt), MEMF_PUBLIC|MEMF_CLEAR);
+	if (!vbint) {
+		printf("Couldn't alloc interrupt");
+		return;
+	}
+
+	vbint->is_Node.ln_Type = NT_INTERRUPT;         /* Initialize the node. */
+	vbint->is_Node.ln_Pri = -60;
+    vbint->is_Node.ln_Name = (char*) "le3d";
+    vbint->is_Data = (APTR)&frameCounter;
+    vbint->is_Code = VertBServer;
+
+	AddIntServer(INTB_VERTB, vbint); /* Kick this interrupt server to life. */
+#endif
 	port = CreateMsgPort();
 	if (!port) {
 		printf("Couldn't create message port!\n");
@@ -85,6 +119,10 @@ LeTiming::~LeTiming()
 	if (port) {
 		DeleteMsgPort(port);
 	}
+#if LE_USE_VBLANK_FRAME_WAIT == 1
+	RemIntServer(INTB_VERTB, vbint);
+	FreeMem(vbint, sizeof(struct Interrupt));
+#endif
 }
 
 /*****************************************************************************/
@@ -148,7 +186,13 @@ bool LeTiming::isNextFrame()
 */
 void LeTiming::waitNextFrame()
 {
-	while(1) {
+#if LE_USE_VBLANK_FRAME_WAIT == 1
+	// framecounter will be incremented whenever vblank interrupt was triggered
+	// so as long as this is 0 the current frame did not finish and we must wait
+	while (frameCounter == 0);
+	frameCounter = 0;
+#else
+	while (1) {
 		ReadEClock(&ecval);
 
 		int64_t pc = ((int64_t) ecval.ev_hi << 32) | ecval.ev_lo;
@@ -166,6 +210,7 @@ void LeTiming::waitNextFrame()
 			GetMsg(port);
 		}
 	}
+#endif
 	ReadEClock(&ecval);
 	int64_t pc = ((int64_t) ecval.ev_hi << 32) | ecval.ev_lo;
 	int64_t dt = pc - lastCounter;
