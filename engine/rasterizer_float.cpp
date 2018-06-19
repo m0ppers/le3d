@@ -94,6 +94,10 @@ void LeRasterizer::flush()
 	frame.clear(background);
 }
 
+void LeRasterizer::resetPixels() {
+	pixels = ((LeColor *) frame.data) + frame.tx;
+}
+
 /*****************************************************************************/
 /**
 	\fn void LeRasterizer::rasterList(LeTriList * trilist)

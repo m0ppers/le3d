@@ -57,6 +57,7 @@ public:
 	void rasterList(LeTriList * trilist);
 	const void * getPixels() {return pixels;}
 	void flush();
+	void resetPixels();
 
 	LeBitmap frame;					/**< frame buffer */ 
 	LeColor background;				/**< background color */ 
